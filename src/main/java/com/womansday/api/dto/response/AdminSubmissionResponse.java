@@ -11,8 +11,11 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
-public class SubmissionResponse {
+public class AdminSubmissionResponse {
     private Long id;
+    private Long taskId;
+    private String taskTitle;
+    private Integer taskReward;
     private Long submitterId;
     private String submitterLogin;
     private String submitterDepartment;

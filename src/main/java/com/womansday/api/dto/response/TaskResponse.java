@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,5 +14,6 @@ public class TaskResponse {
     private String description;
     private Integer reward;
     private TaskType type;
-    private List<SubmissionResponse> submissions;
+    private String myStatus;
+    private Long mySubmissionId;
 }

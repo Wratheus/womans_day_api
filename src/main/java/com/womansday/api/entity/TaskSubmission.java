@@ -6,11 +6,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "task_submissions",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "task_id"}))
+@Table(name = "task_submissions")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,8 +24,8 @@ public class TaskSubmission {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "submitter_id", nullable = false)
+    private User submitter;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
@@ -43,6 +44,15 @@ public class TaskSubmission {
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<SubmissionPhoto> photos = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "submission_participants",
+            joinColumns = @JoinColumn(name = "submission_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> participants = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

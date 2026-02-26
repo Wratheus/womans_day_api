@@ -1,11 +1,11 @@
 package com.womansday.api.service;
 
-import com.womansday.api.dto.response.BudgetResponse;
-import com.womansday.api.dto.response.SubmissionResponse;
-import com.womansday.api.dto.response.TaskResponse;
+import com.womansday.api.dto.response.*;
 import com.womansday.api.entity.*;
 import com.womansday.api.enums.SubmissionStatus;
 import com.womansday.api.enums.TaskType;
+import com.womansday.api.exception.BusinessLogicException;
+import com.womansday.api.exception.ResourceNotFoundException;
 import com.womansday.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,37 +25,55 @@ public class TaskService {
     private final SubmissionPhotoRepository photoRepository;
     private final UserRepository userRepository;
 
-    public List<TaskResponse> getAllTasks() {
+    public List<TaskResponse> getAllTasks(Long userId) {
         return taskRepository.findAll().stream()
-                .map(this::toTaskResponse)
+                .map(task -> toTaskResponse(task, userId))
                 .collect(Collectors.toList());
     }
 
-    public TaskResponse getTask(Long taskId) {
+    public TaskResponse getTask(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Задание не найдено"));
-        return toTaskResponse(task);
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
+        return toTaskResponse(task, userId);
     }
 
     @Transactional
-    public SubmissionResponse submitTask(Long taskId, Long userId, String text, List<MultipartFile> photos) {
+    public SubmissionResponse submitTask(Long taskId, Long submitterId, String text,
+                                          List<MultipartFile> photos, List<Long> participantIds) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Задание не найдено"));
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+        User submitter = userRepository.findById(submitterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
-        if (submissionRepository.existsByUserIdAndTaskId(userId, taskId)) {
-            throw new IllegalArgumentException("Вы уже отправили ответ на это задание");
+        Set<User> participants = new HashSet<>();
+        participants.add(submitter);
+
+        if (participantIds != null && !participantIds.isEmpty()) {
+            for (Long pid : participantIds) {
+                User participant = userRepository.findById(pid)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Участник с ID " + pid + " не найден"));
+                participants.add(participant);
+            }
+        }
+
+        for (User participant : participants) {
+            if (submissionRepository.hasActiveSubmission(participant.getId(), taskId)) {
+                throw new BusinessLogicException(
+                        "Пользователь " + participant.getLogin() +
+                                " уже имеет активный ответ на это задание");
+            }
         }
 
         validateSubmission(task.getType(), text, photos);
 
         TaskSubmission submission = TaskSubmission.builder()
-                .user(user)
+                .submitter(submitter)
                 .task(task)
                 .status(SubmissionStatus.PENDING)
                 .text(text)
+                .participants(participants)
                 .build();
 
         submission = submissionRepository.save(submission);
@@ -71,7 +89,7 @@ public class TaskService {
                     photoRepository.save(photoEntity);
                     submission.getPhotos().add(photoEntity);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка загрузки фото", e);
+                    throw new BusinessLogicException("Ошибка загрузки фото");
                 }
             }
         }
@@ -80,20 +98,43 @@ public class TaskService {
     }
 
     @Transactional
-    public SubmissionResponse reviewSubmission(Long taskId, Long userId, boolean approved) {
-        TaskSubmission submission = submissionRepository.findByUserIdAndTaskId(userId, taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Ответ не найден"));
+    public AdminSubmissionResponse reviewSubmission(Long submissionId, boolean approved) {
+        TaskSubmission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Ответ не найден"));
+
+        if (submission.getStatus() != SubmissionStatus.PENDING) {
+            throw new BusinessLogicException("Этот ответ уже был рассмотрен");
+        }
 
         submission.setStatus(approved ? SubmissionStatus.APPROVED : SubmissionStatus.REJECTED);
         submissionRepository.save(submission);
 
-        return toSubmissionResponse(submission);
+        return toAdminSubmissionResponse(submission);
+    }
+
+    public List<AdminSubmissionResponse> getAdminSubmissions(String statusFilter) {
+        List<TaskSubmission> submissions;
+
+        if (statusFilter != null && !statusFilter.isBlank()) {
+            try {
+                SubmissionStatus status = SubmissionStatus.valueOf(statusFilter.toUpperCase());
+                submissions = submissionRepository.findByStatusOrderByCreatedAtAsc(status);
+            } catch (IllegalArgumentException e) {
+                throw new BusinessLogicException("Неизвестный статус: " + statusFilter);
+            }
+        } else {
+            submissions = submissionRepository.findAllOrderByStatusAndCreatedAt();
+        }
+
+        return submissions.stream()
+                .map(this::toAdminSubmissionResponse)
+                .collect(Collectors.toList());
     }
 
     public BudgetResponse getBudget() {
-        long totalTasks = taskRepository.sumAllRewards();
+        long totalRewards = taskRepository.sumAllRewards();
         long userCount = userRepository.count();
-        long totalBudget = totalTasks * userCount;
+        long totalBudget = totalRewards * userCount;
         long approvedBudget = submissionRepository.sumRewardsByStatus(SubmissionStatus.APPROVED);
 
         return BudgetResponse.builder()
@@ -104,13 +145,13 @@ public class TaskService {
 
     public byte[] getPhotoData(Long photoId) {
         SubmissionPhoto photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("Фото не найдено"));
+                .orElseThrow(() -> new ResourceNotFoundException("Фото не найдено"));
         return photo.getData();
     }
 
     public String getPhotoContentType(Long photoId) {
         SubmissionPhoto photo = photoRepository.findById(photoId)
-                .orElseThrow(() -> new IllegalArgumentException("Фото не найдено"));
+                .orElseThrow(() -> new ResourceNotFoundException("Фото не найдено"));
         return photo.getContentType();
     }
 
@@ -120,20 +161,30 @@ public class TaskService {
 
         switch (taskType) {
             case TEXT -> {
-                if (!hasText) throw new IllegalArgumentException("Это задание требует текстовый ответ");
+                if (!hasText) throw new BusinessLogicException("Это задание требует текстовый ответ");
             }
             case PHOTO -> {
-                if (!hasPhotos) throw new IllegalArgumentException("Это задание требует фото");
+                if (!hasPhotos) throw new BusinessLogicException("Это задание требует фото");
             }
             case TEXT_AND_PHOTO -> {
-                if (!hasText) throw new IllegalArgumentException("Это задание требует текстовый ответ");
-                if (!hasPhotos) throw new IllegalArgumentException("Это задание требует фото");
+                if (!hasText) throw new BusinessLogicException("Это задание требует текстовый ответ");
+                if (!hasPhotos) throw new BusinessLogicException("Это задание требует фото");
             }
         }
     }
 
-    private TaskResponse toTaskResponse(Task task) {
-        List<TaskSubmission> submissions = submissionRepository.findByTaskId(task.getId());
+    private TaskResponse toTaskResponse(Task task, Long userId) {
+        List<TaskSubmission> userSubmissions =
+                submissionRepository.findByParticipantAndTaskId(userId, task.getId());
+
+        String myStatus = "NOT_STARTED";
+        Long mySubmissionId = null;
+
+        if (!userSubmissions.isEmpty()) {
+            TaskSubmission latest = userSubmissions.get(0);
+            myStatus = latest.getStatus().name();
+            mySubmissionId = latest.getId();
+        }
 
         return TaskResponse.builder()
                 .id(task.getId())
@@ -141,26 +192,55 @@ public class TaskService {
                 .description(task.getDescription())
                 .reward(task.getReward())
                 .type(task.getType())
-                .submissions(submissions.stream()
-                        .map(this::toSubmissionResponse)
-                        .collect(Collectors.toList()))
+                .myStatus(myStatus)
+                .mySubmissionId(mySubmissionId)
                 .build();
     }
 
     private SubmissionResponse toSubmissionResponse(TaskSubmission submission) {
-        List<Long> photoIds = submission.getPhotos().stream()
-                .map(SubmissionPhoto::getId)
-                .collect(Collectors.toList());
-
         return SubmissionResponse.builder()
                 .id(submission.getId())
-                .userId(submission.getUser().getId())
-                .userLogin(submission.getUser().getLogin())
-                .userDepartment(submission.getUser().getDepartment())
+                .submitterId(submission.getSubmitter().getId())
+                .submitterLogin(submission.getSubmitter().getLogin())
+                .submitterDepartment(submission.getSubmitter().getDepartment())
+                .participants(submission.getParticipants().stream()
+                        .map(u -> UserResponse.builder()
+                                .id(u.getId())
+                                .login(u.getLogin())
+                                .department(u.getDepartment())
+                                .build())
+                        .collect(Collectors.toList()))
                 .status(submission.getStatus())
                 .text(submission.getText())
                 .createdAt(submission.getCreatedAt())
-                .photoIds(photoIds)
+                .photoIds(submission.getPhotos().stream()
+                        .map(SubmissionPhoto::getId)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    private AdminSubmissionResponse toAdminSubmissionResponse(TaskSubmission submission) {
+        return AdminSubmissionResponse.builder()
+                .id(submission.getId())
+                .taskId(submission.getTask().getId())
+                .taskTitle(submission.getTask().getTitle())
+                .taskReward(submission.getTask().getReward())
+                .submitterId(submission.getSubmitter().getId())
+                .submitterLogin(submission.getSubmitter().getLogin())
+                .submitterDepartment(submission.getSubmitter().getDepartment())
+                .participants(submission.getParticipants().stream()
+                        .map(u -> UserResponse.builder()
+                                .id(u.getId())
+                                .login(u.getLogin())
+                                .department(u.getDepartment())
+                                .build())
+                        .collect(Collectors.toList()))
+                .status(submission.getStatus())
+                .text(submission.getText())
+                .createdAt(submission.getCreatedAt())
+                .photoIds(submission.getPhotos().stream()
+                        .map(SubmissionPhoto::getId)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

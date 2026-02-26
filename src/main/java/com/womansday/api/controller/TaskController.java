@@ -1,11 +1,9 @@
 package com.womansday.api.controller;
 
-import com.womansday.api.dto.request.ReviewRequest;
 import com.womansday.api.dto.response.BudgetResponse;
 import com.womansday.api.dto.response.SubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.service.TaskService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,13 +22,15 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+    public ResponseEntity<List<TaskResponse>> getAllTasks(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(taskService.getAllTasks(userId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTask(@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTask(id));
+    public ResponseEntity<TaskResponse> getTask(@PathVariable Long id, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(taskService.getTask(id, userId));
     }
 
     @PostMapping(value = "/{id}/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -38,17 +38,11 @@ public class TaskController {
             @PathVariable Long id,
             @RequestParam(required = false) String text,
             @RequestPart(required = false) List<MultipartFile> photos,
+            @RequestParam(required = false) List<Long> participantIds,
             Authentication authentication) {
 
         Long userId = (Long) authentication.getPrincipal();
-        return ResponseEntity.ok(taskService.submitTask(id, userId, text, photos));
-    }
-
-    @PatchMapping("/{id}/review")
-    public ResponseEntity<SubmissionResponse> reviewSubmission(
-            @PathVariable Long id,
-            @Valid @RequestBody ReviewRequest request) {
-        return ResponseEntity.ok(taskService.reviewSubmission(id, request.getUserId(), request.getApproved()));
+        return ResponseEntity.ok(taskService.submitTask(id, userId, text, photos, participantIds));
     }
 
     @GetMapping("/budget")

@@ -7,16 +7,25 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, Long> {
 
-    boolean existsByUserIdAndTaskId(Long userId, Long taskId);
-
-    Optional<TaskSubmission> findByUserIdAndTaskId(Long userId, Long taskId);
-
     List<TaskSubmission> findByTaskId(Long taskId);
 
-    @Query("SELECT COALESCE(SUM(ts.task.reward), 0) FROM TaskSubmission ts WHERE ts.status = :status")
+    List<TaskSubmission> findByStatusOrderByCreatedAtAsc(SubmissionStatus status);
+
+    @Query("SELECT s FROM TaskSubmission s ORDER BY " +
+            "CASE s.status WHEN 'PENDING' THEN 0 WHEN 'REJECTED' THEN 1 WHEN 'APPROVED' THEN 2 END, " +
+            "s.createdAt ASC")
+    List<TaskSubmission> findAllOrderByStatusAndCreatedAt();
+
+    @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId AND s.task.id = :taskId ORDER BY s.createdAt DESC")
+    List<TaskSubmission> findByParticipantAndTaskId(@Param("userId") Long userId, @Param("taskId") Long taskId);
+
+    @Query("SELECT COUNT(s) > 0 FROM TaskSubmission s JOIN s.participants p " +
+            "WHERE p.id = :userId AND s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED')")
+    boolean hasActiveSubmission(@Param("userId") Long userId, @Param("taskId") Long taskId);
+
+    @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p WHERE s.status = :status")
     long sumRewardsByStatus(@Param("status") SubmissionStatus status);
 }
