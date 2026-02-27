@@ -2,5 +2,10 @@ package com.womansday.api.enums;
 
 public enum Role {
     USER,
-    ADMIN
+    ADMIN;
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }

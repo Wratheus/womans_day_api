@@ -3,5 +3,10 @@ package com.womansday.api.enums;
 public enum TaskType {
     PHOTO,
     TEXT,
-    TEXT_AND_PHOTO
+    TEXT_AND_PHOTO;
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }
