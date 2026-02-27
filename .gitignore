@@ -19,4 +19,5 @@ Thumbs.db
 # Compiled
 *.class
 *.jar
+.env
 !gradle/wrapper/gradle-wrapper.jar
