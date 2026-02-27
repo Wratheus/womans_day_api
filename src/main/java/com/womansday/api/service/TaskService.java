@@ -178,7 +178,7 @@ public class TaskService {
         List<TaskSubmission> userSubmissions =
                 submissionRepository.findByParticipantAndTaskId(userId, task.getId());
 
-        String myStatus = "NOT_STARTED";
+        String myStatus = SubmissionStatus.NOT_STARTED.value();
         Long mySubmissionId = null;
 
         if (!userSubmissions.isEmpty()) {

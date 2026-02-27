@@ -1,12 +1,21 @@
 package com.womansday.api.enums;
 
-public enum SubmissionStatus {
-    PENDING,
-    APPROVED,
-    REJECTED;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-    @Override
-    public String toString() {
-        return name().toLowerCase();
+public enum SubmissionStatus {
+    NOT_STARTED("notStarted"),
+    PENDING("pending"),
+    APPROVED("approved"),
+    REJECTED("rejected");
+
+    private final String value;
+
+    SubmissionStatus(String value) {
+        this.value = value;
+    }
+
+    @JsonValue
+    public String value() {
+        return value;
     }
 }

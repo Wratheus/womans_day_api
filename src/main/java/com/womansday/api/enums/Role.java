@@ -1,11 +1,10 @@
 package com.womansday.api.enums;
 
-public enum Role {
-    USER,
-    ADMIN;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    @Override
-    public String toString() {
-        return name().toLowerCase();
-    }
+public enum Role {
+    @JsonProperty("user")
+    USER,
+    @JsonProperty("admin")
+    ADMIN;
 }

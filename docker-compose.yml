@@ -1,13 +1,26 @@
 services:
-  api:
+  api-prod:
     build: .
     ports:
       - "8080:8080"
     volumes:
-      - db-data:/app/data
+      - prod-data:/app/data
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/womansday.db
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/womansday-prod.db
+    restart: unless-stopped
+
+  api-dev:
+    build: .
+    ports:
+      - "8081:8080"
+    volumes:
+      - dev-data:/app/data
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/womansday-dev.db
     restart: unless-stopped
 
 volumes:
-  db-data:
+  prod-data:
+  dev-data:

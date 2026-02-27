@@ -1,12 +1,12 @@
 package com.womansday.api.enums;
 
-public enum TaskType {
-    PHOTO,
-    TEXT,
-    TEXT_AND_PHOTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    @Override
-    public String toString() {
-        return name().toLowerCase();
-    }
+public enum TaskType {
+    @JsonProperty("photo")
+    PHOTO,
+    @JsonProperty("text")
+    TEXT,
+    @JsonProperty("textAndPhoto")
+    TEXT_AND_PHOTO;
 }
