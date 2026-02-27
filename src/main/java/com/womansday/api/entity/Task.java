@@ -29,4 +29,8 @@ public class Task {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TaskType type;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean collaborative = false;
 }

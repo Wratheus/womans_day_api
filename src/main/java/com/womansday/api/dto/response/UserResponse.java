@@ -10,5 +10,7 @@ import lombok.Data;
 public class UserResponse {
     private Long id;
     private String login;
+    private String firstName;
+    private String lastName;
     private String department;
 }

@@ -29,6 +29,8 @@ public class DataInitializer implements CommandLineRunner {
             User admin = User.builder()
                     .login("admin")
                     .passwordHash(passwordEncoder.encode("admin"))
+                    .firstName("Админ")
+                    .lastName("Администратор")
                     .department("Администрация")
                     .role(Role.ADMIN)
                     .build();
@@ -43,6 +45,7 @@ public class DataInitializer implements CommandLineRunner {
                             .description("Сделайте совместное селфи с коллегой из другого отдела")
                             .reward(500)
                             .type(TaskType.PHOTO)
+                            .collaborative(true)
                             .build(),
                     Task.builder()
                             .title("Комплимент дня")
@@ -67,6 +70,7 @@ public class DataInitializer implements CommandLineRunner {
                             .description("Сделайте групповое фото вашего отдела")
                             .reward(600)
                             .type(TaskType.PHOTO)
+                            .collaborative(true)
                             .build()
             );
             taskRepository.saveAll(tasks);

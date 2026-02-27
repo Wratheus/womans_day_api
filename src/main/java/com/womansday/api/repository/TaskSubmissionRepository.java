@@ -28,4 +28,8 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
 
     @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p WHERE s.status = :status")
     long sumRewardsByStatus(@Param("status") SubmissionStatus status);
+
+    @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p " +
+            "WHERE p.id = :userId AND s.status = 'APPROVED'")
+    long sumApprovedRewardsByUserId(@Param("userId") Long userId);
 }

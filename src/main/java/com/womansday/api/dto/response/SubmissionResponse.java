@@ -14,6 +14,8 @@ public class SubmissionResponse {
     private Long id;
     private Long submitterId;
     private String submitterLogin;
+    private String submitterFirstName;
+    private String submitterLastName;
     private String submitterDepartment;
     private List<UserResponse> participants;
     private SubmissionStatus status;

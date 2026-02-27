@@ -15,6 +15,12 @@ public class RegisterRequest {
     @Size(min = 4, max = 100, message = "Пароль от 4 до 100 символов")
     private String password;
 
+    @NotBlank(message = "Имя обязательно")
+    private String firstName;
+
+    @NotBlank(message = "Фамилия обязательна")
+    private String lastName;
+
     @NotBlank(message = "Отдел обязателен")
     private String department;
 }
