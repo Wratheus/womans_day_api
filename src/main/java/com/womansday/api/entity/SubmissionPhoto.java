@@ -20,8 +20,7 @@ public class SubmissionPhoto {
     @JoinColumn(name = "submission_id", nullable = false)
     private TaskSubmission submission;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BLOB")
     private byte[] data;
 
     @Column(nullable = false)

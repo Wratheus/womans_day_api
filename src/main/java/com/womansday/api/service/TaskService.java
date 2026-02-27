@@ -119,12 +119,12 @@ public class TaskService {
         if (statusFilter != null && !statusFilter.isBlank()) {
             try {
                 SubmissionStatus status = SubmissionStatus.valueOf(statusFilter.toUpperCase());
-                submissions = submissionRepository.findByStatusOrderByCreatedAtAsc(status);
+                submissions = submissionRepository.findByStatusOrderByCreatedAtEpochAsc(status);
             } catch (IllegalArgumentException e) {
                 throw new BusinessLogicException("Неизвестный статус: " + statusFilter);
             }
         } else {
-            submissions = submissionRepository.findAllOrderByStatusAndCreatedAt();
+            submissions = submissionRepository.findAllOrderByStatusAndCreatedAtEpoch();
         }
 
         return submissions.stream()
@@ -213,7 +213,7 @@ public class TaskService {
                         .collect(Collectors.toList()))
                 .status(submission.getStatus())
                 .text(submission.getText())
-                .createdAt(submission.getCreatedAtEpoch())
+                .createdAtEpoch(submission.getCreatedAtEpoch())
                 .photoIds(submission.getPhotos().stream()
                         .map(SubmissionPhoto::getId)
                         .collect(Collectors.toList()))
@@ -238,7 +238,7 @@ public class TaskService {
                         .collect(Collectors.toList()))
                 .status(submission.getStatus())
                 .text(submission.getText())
-                .createdAt(submission.getCreatedAtEpoch())
+                .createdAtEpoch(submission.getCreatedAtEpoch())
                 .photoIds(submission.getPhotos().stream()
                         .map(SubmissionPhoto::getId)
                         .collect(Collectors.toList()))

@@ -12,14 +12,14 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
 
     List<TaskSubmission> findByTaskId(Long taskId);
 
-    List<TaskSubmission> findByStatusOrderByCreatedAtAsc(SubmissionStatus status);
+    List<TaskSubmission> findByStatusOrderByCreatedAtEpochAsc(SubmissionStatus status);
 
     @Query("SELECT s FROM TaskSubmission s ORDER BY " +
             "CASE s.status WHEN 'PENDING' THEN 0 WHEN 'REJECTED' THEN 1 WHEN 'APPROVED' THEN 2 END, " +
-            "s.createdAt ASC")
-    List<TaskSubmission> findAllOrderByStatusAndCreatedAt();
+            "s.createdAtEpoch ASC")
+    List<TaskSubmission> findAllOrderByStatusAndCreatedAtEpoch();
 
-    @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId AND s.task.id = :taskId ORDER BY s.createdAt DESC")
+    @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId AND s.task.id = :taskId ORDER BY s.createdAtEpoch DESC")
     List<TaskSubmission> findByParticipantAndTaskId(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
     @Query("SELECT COUNT(s) > 0 FROM TaskSubmission s JOIN s.participants p " +

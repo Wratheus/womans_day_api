@@ -21,6 +21,6 @@ public class AdminSubmissionResponse {
     private List<UserResponse> participants;
     private SubmissionStatus status;
     private String text;
-    private Long createdAt;
+    private Long createdAtEpoch;
     private List<Long> photoIds;
 }
