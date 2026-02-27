@@ -20,8 +20,8 @@ public class SubmissionPhoto {
     @JoinColumn(name = "submission_id", nullable = false)
     private TaskSubmission submission;
 
-    @Column(nullable = false, columnDefinition = "BLOB")
-    private byte[] data;
+    @Column(nullable = false)
+    private String filePath;
 
     @Column(nullable = false)
     private String contentType;
