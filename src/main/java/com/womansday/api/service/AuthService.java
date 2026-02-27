@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -47,7 +48,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByLogin(request.getLogin())
-                .orElseThrow(() -> new IllegalArgumentException("Неверный логин или пароль"));
+                .orElseThrow(() -> new BusinessLogicException("Неверный логин или пароль"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new BusinessLogicException("Неверный логин или пароль");
