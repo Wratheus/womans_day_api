@@ -6,9 +6,35 @@
       "description": "Secret key for signing JWT tokens"
     },
     {
-      "name": "jwt.expiration-ms",
+      "name": "jwt.access-expiration-ms",
       "type": "java.lang.Long",
-      "description": "JWT token expiration time in milliseconds"
+      "description": "Access token lifetime"
+    },
+    {
+      "name": "jwt.refresh-expiration-ms",
+      "type": "java.lang.Long",
+      "description": "Refresh token lifetime"
+    },
+    {
+      "name": "cors.allowed-origins",
+      "type": "java.util.List<java.lang.String>",
+      "description": "List of allowed CORS origins"
+    },
+    {
+      "name": "app.photos.storage-dir",
+      "type": "java.lang.String",
+      "description": "Photos dir",
+      "defaultValue": "./photos"
+    },
+    {
+      "name": "admin.login",
+      "type": "java.lang.String",
+      "description": "Admin's login"
+    },
+    {
+      "name": "admin.password",
+      "type": "java.lang.String",
+      "description": "Admin's pswd"
     }
   ]
 }
