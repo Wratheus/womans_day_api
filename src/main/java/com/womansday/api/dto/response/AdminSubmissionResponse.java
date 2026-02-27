@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -22,6 +21,6 @@ public class AdminSubmissionResponse {
     private List<UserResponse> participants;
     private SubmissionStatus status;
     private String text;
-    private LocalDateTime createdAt;
+    private Long createdAt;
     private List<Long> photoIds;
 }

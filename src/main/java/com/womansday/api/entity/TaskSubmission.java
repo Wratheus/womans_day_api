@@ -4,7 +4,6 @@ import com.womansday.api.enums.SubmissionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,8 +37,8 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String text;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at_epoch", nullable = false)
+    private Long createdAtEpoch;
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -56,6 +55,6 @@ public class TaskSubmission {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAtEpoch = java.time.Instant.now().toEpochMilli();
     }
 }
