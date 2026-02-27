@@ -1,13 +1,35 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-womansday}
+      POSTGRES_USER: ${DB_USER:-womansday}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-womansday}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
   api-prod:
     build: .
     ports:
       - "8080:8080"
     volumes:
-      - prod-data:/app/data
+      - photos-prod:/app/photos
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/womansday-prod.db
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-womansday}
+      DB_USER: ${DB_USER:-womansday}
+      DB_PASSWORD: ${DB_PASSWORD:-womansday}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      PHOTOS_DIR: /app/photos
+    depends_on:
+      - db
     restart: unless-stopped
 
   api-dev:
@@ -15,12 +37,19 @@ services:
     ports:
       - "8081:8080"
     volumes:
-      - dev-data:/app/data
+      - photos-dev:/app/photos
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/womansday-dev.db
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-womansday}_dev
+      DB_USER: ${DB_USER:-womansday}
+      DB_PASSWORD: ${DB_PASSWORD:-womansday}
+      PHOTOS_DIR: /app/photos
+    depends_on:
+      - db
     restart: unless-stopped
 
 volumes:
-  prod-data:
-  dev-data:
+  pg-data:
+  photos-prod:
+  photos-dev:

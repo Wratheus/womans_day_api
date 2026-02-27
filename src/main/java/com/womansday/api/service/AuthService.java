@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -20,6 +23,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final Set<String> revokedJtis = ConcurrentHashMap.newKeySet();
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByLogin(request.getLogin())) {
@@ -37,17 +42,7 @@ public class AuthService {
 
         user = userRepository.save(user);
 
-        String token = jwtTokenProvider.generateToken(user.getId(), user.getLogin(), user.getRole().name());
-
-        return AuthResponse.builder()
-                .id(user.getId())
-                .login(user.getLogin())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .department(user.getDepartment())
-                .role(user.getRole())
-                .token(token)
-                .build();
+        return buildAuthResponse(user);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -58,7 +53,48 @@ public class AuthService {
             throw new BusinessLogicException("Неверный логин или пароль");
         }
 
-        String token = jwtTokenProvider.generateToken(user.getId(), user.getLogin(), user.getRole().name());
+        return buildAuthResponse(user);
+    }
+
+    public AuthResponse refresh(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new BusinessLogicException("Невалидный refresh token");
+        }
+
+        String tokenType = jwtTokenProvider.getTokenType(refreshToken);
+        if (!"refresh".equals(tokenType)) {
+            throw new BusinessLogicException("Предоставлен неверный тип токена");
+        }
+
+        String jti = jwtTokenProvider.getJti(refreshToken);
+        if (jti != null && revokedJtis.contains(jti)) {
+            throw new BusinessLogicException("Refresh token отозван");
+        }
+
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
+
+        if (jti != null) {
+            revokedJtis.add(jti);
+        }
+
+        return buildAuthResponse(user);
+    }
+
+    public void logout(String refreshToken) {
+        if (jwtTokenProvider.validateToken(refreshToken)) {
+            String jti = jwtTokenProvider.getJti(refreshToken);
+            if (jti != null) {
+                revokedJtis.add(jti);
+            }
+        }
+    }
+
+    private AuthResponse buildAuthResponse(User user) {
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getId(), user.getLogin(), user.getRole().name());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
         return AuthResponse.builder()
                 .id(user.getId())
@@ -67,7 +103,9 @@ public class AuthService {
                 .lastName(user.getLastName())
                 .department(user.getDepartment())
                 .role(user.getRole())
-                .token(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(jwtTokenProvider.getAccessExpirationSeconds())
                 .build();
     }
 }

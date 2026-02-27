@@ -8,6 +8,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
 
+        /* Loading screen */
+        .loading-screen { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 200; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid #334155; border-top-color: #f472b6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* Login */
         .login-overlay { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 100; }
         .login-box { background: #1e293b; padding: 2rem; border-radius: 12px; width: 340px; }
@@ -74,16 +79,28 @@
 
         .hidden { display: none !important; }
         .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem; }
+
+        /* Review buttons */
+        .btn-sm { padding: 0.2rem 0.5rem; border: none; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-right: 0.3rem; }
+        .btn-approve { background: #4ade8033; color: #4ade80; }
+        .btn-approve:hover { background: #4ade8055; }
+        .btn-reject { background: #f8717133; color: #f87171; }
+        .btn-reject:hover { background: #f8717155; }
     </style>
 </head>
 <body>
 
-<!-- Login -->
-<div class="login-overlay" id="loginOverlay">
+<!-- Loading screen (shown first to prevent login form flicker) -->
+<div class="loading-screen" id="loadingScreen">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Login (hidden by default) -->
+<div class="login-overlay hidden" id="loginOverlay">
     <div class="login-box">
         <h2>Admin Panel</h2>
         <div class="login-error" id="loginError">Неверный логин или пароль</div>
-        <input type="text" id="loginInput" placeholder="Логин" value="admin">
+        <input type="text" id="loginInput" placeholder="Логин">
         <input type="password" id="passwordInput" placeholder="Пароль">
         <button onclick="doLogin()">Войти</button>
     </div>
@@ -125,7 +142,7 @@
             <h3>Последние ответы на задания</h3>
             <table>
                 <thead>
-                    <tr><th>ID</th><th>Задание</th><th>Отправитель</th><th>Отдел</th><th>Статус</th><th>Время</th></tr>
+                    <tr><th>ID</th><th>Задание</th><th>Отправитель</th><th>Отдел</th><th>Статус</th><th>Время</th><th>Действия</th></tr>
                 </thead>
                 <tbody id="submissionsBody"></tbody>
             </table>
@@ -157,6 +174,12 @@
     let token = localStorage.getItem('admin_token');
     let refreshInterval;
 
+    // --- XSS protection ---
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     // --- Auth ---
     async function doLogin() {
         const login = document.getElementById('loginInput').value;
@@ -174,7 +197,7 @@
                 document.getElementById('loginError').style.display = 'block';
                 return;
             }
-            token = data.token;
+            token = data.accessToken;
             localStorage.setItem('admin_token', token);
             showApp();
         } catch {
@@ -182,7 +205,15 @@
         }
     }
 
-    function doLogout() {
+    async function doLogout() {
+        if (token) {
+            try {
+                await fetch(`${BASE}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch {}
+        }
         token = null;
         localStorage.removeItem('admin_token');
         document.getElementById('app').classList.add('hidden');
@@ -191,15 +222,34 @@
     }
 
     function showApp() {
+        document.getElementById('loadingScreen').classList.add('hidden');
         document.getElementById('loginOverlay').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         refreshAll();
         refreshInterval = setInterval(refreshAll, 5000);
     }
 
+    function showLogin() {
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('loginOverlay').classList.remove('hidden');
+    }
+
     async function api(path) {
         const res = await fetch(`${BASE}${path}`, {
             headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.status === 401 || res.status === 403) { doLogout(); throw new Error('unauthorized'); }
+        return res.json();
+    }
+
+    async function apiPatch(path, body) {
+        const res = await fetch(`${BASE}${path}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
         });
         if (res.status === 401 || res.status === 403) { doLogout(); throw new Error('unauthorized'); }
         return res.json();
@@ -222,7 +272,7 @@
         try {
             const [users, budget, submissions] = await Promise.all([
                 api('/api/users'),
-                api('/api/tasks/budget'),
+                api('/api/admin/budget'),
                 api('/api/admin/submissions')
             ]);
             document.getElementById('userCount').textContent = users.length;
@@ -236,24 +286,44 @@
         try {
             const data = await api('/api/admin/submissions');
             const tbody = document.getElementById('submissionsBody');
-            tbody.innerHTML = data.slice(0, 50).map(s => `
-                <tr>
-                    <td class="mono">${s.id}</td>
-                    <td>${s.taskTitle}</td>
-                    <td>${s.submitterFirstName ? s.submitterFirstName + ' ' + s.submitterLastName : s.submitterLogin}</td>
-                    <td>${s.submitterDepartment}</td>
-                    <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
-                    <td class="mono">${new Date(s.createdAtEpoch).toLocaleString('ru')}</td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = data.slice(0, 50).map(s => {
+                const name = s.submitterFirstName
+                    ? escapeHtml(s.submitterFirstName) + ' ' + escapeHtml(s.submitterLastName)
+                    : escapeHtml(s.submitterLogin);
+                const actions = s.status === 'PENDING'
+                    ? `<button class="btn-sm btn-approve" onclick="reviewSubmission(${s.id}, true)">Одобрить</button>` +
+                      `<button class="btn-sm btn-reject" onclick="reviewSubmission(${s.id}, false)">Отклонить</button>`
+                    : '';
+                return `
+                    <tr>
+                        <td class="mono">${s.id}</td>
+                        <td>${escapeHtml(s.taskTitle)}</td>
+                        <td>${name}</td>
+                        <td>${escapeHtml(s.submitterDepartment)}</td>
+                        <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
+                        <td class="mono">${new Date(s.createdAtEpoch).toLocaleString('ru')}</td>
+                        <td>${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch {}
+    }
+
+    async function reviewSubmission(id, approved) {
+        try {
+            await apiPatch(`/api/admin/submissions/${id}/review`, { approved });
+            await Promise.allSettled([loadSummary(), loadSubmissions()]);
         } catch {}
     }
 
     async function loadRequests() {
         try {
-            const data = await api('/actuator/httpexchanges');
+            const data = await api('/internal/monitor/httpexchanges');
             const tbody = document.getElementById('requestsBody');
-            const exchanges = (data.exchanges || []).reverse().slice(0, 100);
+            const exchanges = (data.exchanges || [])
+                .reverse()
+                .filter(e => !e.request.uri.includes('/internal/monitor/'))
+                .slice(0, 100);
             tbody.innerHTML = exchanges.map(e => {
                 const method = e.request.method;
                 const uri = e.request.uri.replace(BASE, '');
@@ -264,7 +334,7 @@
                     <tr>
                         <td class="mono">${new Date(e.timestamp).toLocaleTimeString('ru')}</td>
                         <td><span class="badge badge-${method.toLowerCase()}">${method}</span></td>
-                        <td class="mono">${uri}</td>
+                        <td class="mono">${escapeHtml(uri)}</td>
                         <td class="${statusClass}">${status}</td>
                         <td class="mono">${duration}</td>
                     </tr>
@@ -275,21 +345,21 @@
 
     async function loadHealth() {
         try {
-            const data = await api('/actuator/health');
+            const data = await api('/internal/monitor/health');
             const container = document.getElementById('healthCards');
             const status = data.status;
             container.innerHTML = `
                 <div class="card">
                     <div class="label">Статус</div>
-                    <div class="value ${status === 'UP' ? 'green' : 'pink'}">${status}</div>
+                    <div class="value ${status === 'UP' ? 'green' : 'pink'}">${escapeHtml(status)}</div>
                 </div>
             `;
             if (data.components) {
                 for (const [name, comp] of Object.entries(data.components)) {
                     container.innerHTML += `
                         <div class="card">
-                            <div class="label">${name}</div>
-                            <div class="value ${comp.status === 'UP' ? 'green' : 'pink'}" style="font-size:1.2rem">${comp.status}</div>
+                            <div class="label">${escapeHtml(name)}</div>
+                            <div class="value ${comp.status === 'UP' ? 'green' : 'pink'}" style="font-size:1.2rem">${escapeHtml(comp.status)}</div>
                         </div>
                     `;
                 }
@@ -300,9 +370,9 @@
     async function loadMetrics() {
         try {
             const [mem, threads, cpu] = await Promise.allSettled([
-                api('/actuator/metrics/jvm.memory.used'),
-                api('/actuator/metrics/jvm.threads.live'),
-                api('/actuator/metrics/process.cpu.usage')
+                api('/internal/monitor/metrics/jvm.memory.used'),
+                api('/internal/monitor/metrics/jvm.threads.live'),
+                api('/internal/monitor/metrics/process.cpu.usage')
             ]);
             const container = document.getElementById('metricsCards');
             let html = '';
@@ -323,7 +393,7 @@
 
     async function loadEnv() {
         try {
-            const data = await api('/actuator/info');
+            const data = await api('/internal/monitor/info');
             const env = data.app?.environment || 'unknown';
             const badge = document.getElementById('envBadge');
             badge.textContent = env;
@@ -343,10 +413,12 @@
     document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
     if (token) {
-        // Validate saved token
+        // Validate saved token — loading screen is shown meanwhile
         fetch(`${BASE}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } })
-            .then(r => { if (r.ok) showApp(); else doLogout(); })
-            .catch(() => doLogout());
+            .then(r => { if (r.ok) showApp(); else showLogin(); })
+            .catch(() => showLogin());
+    } else {
+        showLogin();
     }
 </script>
 </body>

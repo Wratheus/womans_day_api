@@ -37,6 +37,9 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String text;
 
+    @Version
+    private Long version;
+
     @Column(name = "created_at_epoch", nullable = false)
     private Long createdAtEpoch;
 

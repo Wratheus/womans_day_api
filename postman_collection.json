@@ -1,7 +1,7 @@
 {
 	"info": {
 		"name": "Womans Day API",
-		"description": "API для корпоративного приложения к 8 марта.\n\n## Модели ответов\n\n### AuthResponse\n```json\n{\n  \"id\": 1,              // Long\n  \"login\": \"masha\",     // String\n  \"department\": \"Бухгалтерия\", // String\n  \"role\": \"USER\",       // Enum: USER | ADMIN\n  \"token\": \"eyJhb...\"   // String (JWT, 24h)\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,              // Long\n  \"login\": \"masha\",     // String\n  \"department\": \"Бухгалтерия\" // String\n}\n```\n\n### TaskResponse (для обычного юзера)\n```json\n{\n  \"id\": 1,              // Long\n  \"title\": \"Селфи\",     // String\n  \"description\": \"...\", // String\n  \"reward\": 500,        // Integer\n  \"type\": \"PHOTO\",      // Enum: PHOTO | TEXT | TEXT_AND_PHOTO\n  \"myStatus\": \"PENDING\",// String: NOT_STARTED | PENDING | APPROVED | REJECTED\n  \"mySubmissionId\": 1   // Long | null\n}\n```\n\n### SubmissionResponse (ответ на submit)\n```json\n{\n  \"id\": 1,                      // Long\n  \"submitterId\": 2,             // Long\n  \"submitterLogin\": \"masha\",   // String\n  \"submitterDepartment\": \"Бухгалтерия\", // String\n  \"participants\": [UserResponse],// List<UserResponse>\n  \"status\": \"PENDING\",          // Enum: PENDING | APPROVED | REJECTED\n  \"text\": \"...\",                // String | null\n  \"createdAtEpoch\": \"2026-03-08T10:30:00\", // ISO DateTime\n  \"photoIds\": [1, 2]            // List<Long>\n}\n```\n\n### AdminSubmissionResponse (для админки)\n```json\n{\n  \"id\": 1,                      // Long\n  \"taskId\": 3,                  // Long\n  \"taskTitle\": \"Цветочный букет\",// String\n  \"taskReward\": 700,            // Integer\n  \"submitterId\": 2,             // Long\n  \"submitterLogin\": \"masha\",   // String\n  \"submitterDepartment\": \"Бухгалтерия\", // String\n  \"participants\": [UserResponse],// List<UserResponse>\n  \"status\": \"PENDING\",          // Enum: PENDING | APPROVED | REJECTED\n  \"text\": \"...\",                // String | null\n  \"createdAtEpoch\": \"2026-03-08T10:30:00\", // ISO DateTime\n  \"photoIds\": [1, 2]            // List<Long>\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 10000,   // long\n  \"approvedBudget\": 1500  // long\n}\n```\n\n### ErrorResponse\n```json\n{\n  \"error\": \"Сообщение об ошибке\" // String\n}\n```",
+		"description": "API для корпоративного приложения к 8 марта.\n\n## Модели ответов\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Мария\",\n  \"lastName\": \"Иванова\",\n  \"department\": \"Бухгалтерия\",\n  \"role\": \"USER\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Мария\",\n  \"lastName\": \"Иванова\",\n  \"department\": \"Бухгалтерия\",\n  \"avatarUrl\": \"/api/users/1/avatar\"\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Мария\",\n  \"lastName\": \"Иванова\",\n  \"balance\": 1500,\n  \"avatarUrl\": \"/api/users/1/avatar\"\n}\n```\n\n### TaskResponse (для обычного юзера)\n```json\n{\n  \"id\": 1,\n  \"title\": \"Селфи\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"PHOTO\",\n  \"myStatus\": \"PENDING\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse (ответ на submit)\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Мария\",\n  \"submitterLastName\": \"Иванова\",\n  \"submitterDepartment\": \"Бухгалтерия\",\n  \"participants\": [UserResponse],\n  \"status\": \"PENDING\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n  \"photoUrls\": [\"/api/tasks/photos/1\"]\n}\n```\n\n### AdminSubmissionResponse (для админки)\n```json\n{\n  \"id\": 1,\n  \"taskId\": 3,\n  \"taskTitle\": \"Цветочный букет\",\n  \"taskReward\": 700,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Мария\",\n  \"submitterLastName\": \"Иванова\",\n  \"submitterDepartment\": \"Бухгалтерия\",\n  \"participants\": [UserResponse],\n  \"status\": \"PENDING\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n  \"photoUrls\": [\"/api/tasks/photos/1\"]\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 10000,\n  \"approvedBudget\": 1500\n}\n```\n\n### ErrorResponse\n```json\n{\n  \"error\": \"Сообщение об ошибке\"\n}\n```",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -14,7 +14,15 @@
 			"value": ""
 		},
 		{
+			"key": "refreshToken",
+			"value": ""
+		},
+		{
 			"key": "adminToken",
+			"value": ""
+		},
+		{
+			"key": "adminRefreshToken",
 			"value": ""
 		},
 		{
@@ -34,6 +42,42 @@
 	},
 	"item": [
 		{
+			"name": "Root",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8080/",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": [""]
+						},
+						"description": "Корневой endpoint для проверки работоспособности API.\n\n**Auth:** не требуется\n\n**Response:**\n```json\n{\"name\": \"WomansDay API\", \"status\": \"running\"}\n```"
+					},
+					"response": [
+						{
+							"name": "200 - Running",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"name\": \"WomansDay API\",\n    \"status\": \"running\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
 			"name": "Auth",
 			"item": [
 				{
@@ -44,8 +88,9 @@
 							"script": {
 								"exec": [
 									"var json = pm.response.json();",
-									"if (json.token) {",
-									"    pm.collectionVariables.set('token', json.token);",
+									"if (json.accessToken) {",
+									"    pm.collectionVariables.set('token', json.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', json.refreshToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -65,21 +110,21 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"login\": \"masha\",\n    \"password\": \"1234\",\n    \"department\": \"Бухгалтерия\"\n}"
+							"raw": "{\n    \"login\": \"masha\",\n    \"password\": \"1234\",\n    \"firstName\": \"Мария\",\n    \"lastName\": \"Иванова\",\n    \"department\": \"Бухгалтерия\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/auth/register",
 							"host": ["{{baseUrl}}"],
 							"path": ["auth", "register"]
 						},
-						"description": "Регистрация нового пользователя.\n\n**Request body:**\n| Поле | Тип | Обязательно | Ограничения |\n|------|-----|-------------|-------------|\n| login | String | да | 3-50 символов |\n| password | String | да | 4-100 символов |\n| department | String | да | не пустое |\n\n**Response:** `AuthResponse`"
+						"description": "Регистрация нового пользователя.\n\n**Request body:**\n| Поле | Тип | Обязательно | Ограничения |\n|------|-----|-------------|-------------|\n| login | String | да | 3-50 символов |\n| password | String | да | 4-100 символов |\n| firstName | String | да | 1-50 символов |\n| lastName | String | да | 1-50 символов |\n| department | String | да | не пустое |\n\n**Response:** `AuthResponse` (201 Created)"
 					},
 					"response": [
 						{
 							"name": "201 - Success",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"id\": 2,\n    \"login\": \"masha\",\n    \"department\": \"Бухгалтерия\",\n    \"role\": \"USER\",\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\"\n}",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"id\": 2,\n    \"login\": \"masha\",\n    \"firstName\": \"Мария\",\n    \"lastName\": \"Иванова\",\n    \"department\": \"Бухгалтерия\",\n    \"role\": \"USER\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"expiresIn\": 3600\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -109,8 +154,8 @@
 							"script": {
 								"exec": [
 									"var json = pm.response.json();",
-									"if (json.token) {",
-									"    pm.collectionVariables.set('secondUserToken', json.token);",
+									"if (json.accessToken) {",
+									"    pm.collectionVariables.set('secondUserToken', json.accessToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -130,7 +175,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"login\": \"katya\",\n    \"password\": \"1234\",\n    \"department\": \"Отдел продаж\"\n}"
+							"raw": "{\n    \"login\": \"katya\",\n    \"password\": \"1234\",\n    \"firstName\": \"Екатерина\",\n    \"lastName\": \"Петрова\",\n    \"department\": \"Отдел продаж\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/auth/register",
@@ -140,10 +185,10 @@
 					},
 					"response": [
 						{
-							"name": "200 - Success",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"id\": 3,\n    \"login\": \"katya\",\n    \"department\": \"Отдел продаж\",\n    \"role\": \"USER\",\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\"\n}",
+							"name": "201 - Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"id\": 3,\n    \"login\": \"katya\",\n    \"firstName\": \"Екатерина\",\n    \"lastName\": \"Петрова\",\n    \"department\": \"Отдел продаж\",\n    \"role\": \"USER\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"expiresIn\": 3600\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -161,8 +206,9 @@
 							"script": {
 								"exec": [
 									"var json = pm.response.json();",
-									"if (json.token) {",
-									"    pm.collectionVariables.set('token', json.token);",
+									"if (json.accessToken) {",
+									"    pm.collectionVariables.set('token', json.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', json.refreshToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -196,7 +242,7 @@
 							"name": "200 - Success",
 							"status": "OK",
 							"code": 200,
-							"body": "{\n    \"id\": 2,\n    \"login\": \"masha\",\n    \"department\": \"Бухгалтерия\",\n    \"role\": \"USER\",\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\"\n}",
+							"body": "{\n    \"id\": 2,\n    \"login\": \"masha\",\n    \"firstName\": \"Мария\",\n    \"lastName\": \"Иванова\",\n    \"department\": \"Бухгалтерия\",\n    \"role\": \"USER\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"expiresIn\": 3600\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -226,8 +272,9 @@
 							"script": {
 								"exec": [
 									"var json = pm.response.json();",
-									"if (json.token) {",
-									"    pm.collectionVariables.set('adminToken', json.token);",
+									"if (json.accessToken) {",
+									"    pm.collectionVariables.set('adminToken', json.accessToken);",
+									"    pm.collectionVariables.set('adminRefreshToken', json.refreshToken);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -247,20 +294,87 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"login\": \"admin\",\n    \"password\": \"admin\"\n}"
+							"raw": "{\n    \"login\": \"devadmin\",\n    \"password\": \"devpass123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/auth/login",
 							"host": ["{{baseUrl}}"],
 							"path": ["auth", "login"]
-						}
+						},
+						"description": "Авторизация администратора.\n\nВ dev-режиме логин/пароль по умолчанию: devadmin/devpass123.\nВ prod — задаётся через ADMIN_LOGIN и ADMIN_PASSWORD.\n\n**Response:** `AuthResponse`"
 					},
 					"response": [
 						{
 							"name": "200 - Success",
 							"status": "OK",
 							"code": 200,
-							"body": "{\n    \"id\": 1,\n    \"login\": \"admin\",\n    \"department\": \"Администрация\",\n    \"role\": \"ADMIN\",\n    \"token\": \"eyJhbGciOiJIUzI1NiJ9...\"\n}",
+							"body": "{\n    \"id\": 1,\n    \"login\": \"devadmin\",\n    \"firstName\": \"Admin\",\n    \"lastName\": \"Admin\",\n    \"department\": \"Администрация\",\n    \"role\": \"ADMIN\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"expiresIn\": 3600\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var json = pm.response.json();",
+									"if (json.accessToken) {",
+									"    pm.collectionVariables.set('token', json.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "refresh"]
+						},
+						"description": "Обновление пары токенов по refresh token.\n\nСтарый refresh token добавляется в blacklist (одноразовый).\n\n**Request body:**\n| Поле | Тип | Обязательно |\n|------|-----|-------------|\n| refreshToken | String | да |\n\n**Response:** `AuthResponse` с новой парой accessToken + refreshToken"
+					},
+					"response": [
+						{
+							"name": "200 - Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"id\": 2,\n    \"login\": \"masha\",\n    \"firstName\": \"Мария\",\n    \"lastName\": \"Иванова\",\n    \"department\": \"Бухгалтерия\",\n    \"role\": \"USER\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n    \"expiresIn\": 3600\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "400 - Invalid token",
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n    \"error\": \"Невалидный refresh token\"\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -279,9 +393,17 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["auth", "logout"]
 						},
-						"description": "Выход из системы (клиент удаляет токен)."
+						"description": "Выход из системы. Отправляет Bearer token в Authorization header, JTI refresh-токена добавляется в blacklist.\n\n**Auth:** Bearer token"
 					},
-					"response": []
+					"response": [
+						{
+							"name": "200 - Success",
+							"status": "OK",
+							"code": 200,
+							"body": "",
+							"header": []
+						}
+					]
 				}
 			]
 		},
@@ -297,14 +419,153 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["users"]
 						},
-						"description": "Список всех пользователей. Используется на клиенте для выбора участников при отправке задания.\n\n**Auth:** Bearer token\n\n**Response:** `List<UserResponse>`"
+						"description": "Список пользователей. Для обычных юзеров — без админов. Для админов — все.\n\n**Auth:** Bearer token\n\n**Response:** `List<UserResponse>`"
+					},
+					"response": [
+						{
+							"name": "200 - Success (user view)",
+							"status": "OK",
+							"code": 200,
+							"body": "[\n    {\n        \"id\": 2,\n        \"login\": \"masha\",\n        \"firstName\": \"Мария\",\n        \"lastName\": \"Иванова\",\n        \"department\": \"Бухгалтерия\",\n        \"avatarUrl\": \"/api/users/2/avatar\"\n    },\n    {\n        \"id\": 3,\n        \"login\": \"katya\",\n        \"firstName\": \"Екатерина\",\n        \"lastName\": \"Петрова\",\n        \"department\": \"Отдел продаж\",\n        \"avatarUrl\": null\n    }\n]",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Get Me",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me"]
+						},
+						"description": "Информация о текущем пользователе с балансом.\n\n**Auth:** Bearer token\n\n**Response:** `MeResponse`"
 					},
 					"response": [
 						{
 							"name": "200 - Success",
 							"status": "OK",
 							"code": 200,
-							"body": "[\n    {\n        \"id\": 1,\n        \"login\": \"admin\",\n        \"department\": \"Администрация\"\n    },\n    {\n        \"id\": 2,\n        \"login\": \"masha\",\n        \"department\": \"Бухгалтерия\"\n    },\n    {\n        \"id\": 3,\n        \"login\": \"katya\",\n        \"department\": \"Отдел продаж\"\n    }\n]",
+							"body": "{\n    \"id\": 2,\n    \"firstName\": \"Мария\",\n    \"lastName\": \"Иванова\",\n    \"balance\": 1500,\n    \"avatarUrl\": \"/api/users/2/avatar\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Маша\",\n    \"lastName\": \"Сидорова\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me"]
+						},
+						"description": "Обновление профиля (PATCH-семантика — только не-null поля обновляются).\n\n**Auth:** Bearer token\n\n**Request body:**\n| Поле | Тип | Обязательно | Ограничения |\n|------|-----|-------------|-------------|\n| firstName | String | нет | 1-50 символов |\n| lastName | String | нет | 1-50 символов |\n| department | String | нет | 1-100 символов |\n\n**Response:** `MeResponse`"
+					},
+					"response": [
+						{
+							"name": "200 - Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"id\": 2,\n    \"firstName\": \"Маша\",\n    \"lastName\": \"Сидорова\",\n    \"balance\": 1500,\n    \"avatarUrl\": \"/api/users/2/avatar\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Upload Avatar",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/me/avatar",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me", "avatar"]
+						},
+						"description": "Загрузка аватара. Только image/*.\n\n**Auth:** Bearer token\n\n**Content-Type:** multipart/form-data\n\n**Response:** URL аватара (plain text)"
+					},
+					"response": [
+						{
+							"name": "200 - Success",
+							"status": "OK",
+							"code": 200,
+							"body": "/api/users/2/avatar",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							]
+						},
+						{
+							"name": "400 - Not an image",
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n    \"error\": \"Допускаются только изображения\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Get Avatar",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8080/api/users/2/avatar",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["api", "users", "2", "avatar"]
+						},
+						"description": "Получить аватар пользователя.\n\n**Auth:** Bearer token\n\n**Response:** binary (image/jpeg, image/png, etc.)"
+					},
+					"response": [
+						{
+							"name": "404 - No avatar",
+							"status": "Not Found",
+							"code": 404,
+							"body": "{\n    \"error\": \"Аватар не найден\"\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -328,14 +589,14 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["tasks"]
 						},
-						"description": "Все задания с персональным статусом текущего юзера.\n\n**Auth:** Bearer token\n\n**Response:** `List<TaskResponse>`\n\n**myStatus значения:**\n- `NOT_STARTED` — ещё не отправлял\n- `PENDING` — отправлено, ждёт ревью\n- `APPROVED` — принято\n- `REJECTED` — отклонено (можно переотправить)"
+						"description": "Все задания с персональным статусом текущего юзера.\n\n**Auth:** Bearer token\n\n**Response:** `List<TaskResponse>`\n\n**myStatus значения:**\n- `NOT_STARTED` — ещё не отправлял\n- `PENDING` — отправлено, ждёт ревью\n- `APPROVED` — принято\n- `REJECTED` — отклонено (можно переотправить)\n\n**mySubmission** — полный объект SubmissionResponse (если есть ответ)"
 					},
 					"response": [
 						{
 							"name": "200 - Success",
 							"status": "OK",
 							"code": 200,
-							"body": "[\n    {\n        \"id\": 1,\n        \"title\": \"Селфи с коллегой\",\n        \"description\": \"Сделайте совместное селфи с коллегой из другого отдела\",\n        \"reward\": 500,\n        \"type\": \"PHOTO\",\n        \"myStatus\": \"NOT_STARTED\",\n        \"mySubmissionId\": null\n    },\n    {\n        \"id\": 2,\n        \"title\": \"Комплимент дня\",\n        \"description\": \"Напишите комплимент коллеге\",\n        \"reward\": 300,\n        \"type\": \"TEXT\",\n        \"myStatus\": \"PENDING\",\n        \"mySubmissionId\": 1\n    },\n    {\n        \"id\": 3,\n        \"title\": \"Цветочный букет\",\n        \"description\": \"Сфотографируйте букет и напишите пожелание\",\n        \"reward\": 700,\n        \"type\": \"TEXT_AND_PHOTO\",\n        \"myStatus\": \"APPROVED\",\n        \"mySubmissionId\": 2\n    },\n    {\n        \"id\": 4,\n        \"title\": \"Поздравительная открытка\",\n        \"description\": \"Напишите поздравительную открытку для коллеги\",\n        \"reward\": 400,\n        \"type\": \"TEXT\",\n        \"myStatus\": \"REJECTED\",\n        \"mySubmissionId\": 3\n    },\n    {\n        \"id\": 5,\n        \"title\": \"Командное фото\",\n        \"description\": \"Сделайте фото всей командой\",\n        \"reward\": 600,\n        \"type\": \"PHOTO\",\n        \"myStatus\": \"NOT_STARTED\",\n        \"mySubmissionId\": null\n    }\n]",
+							"body": "[\n    {\n        \"id\": 1,\n        \"title\": \"Селфи с коллегой\",\n        \"description\": \"Сделайте совместное селфи с коллегой из другого отдела\",\n        \"reward\": 500,\n        \"type\": \"PHOTO\",\n        \"myStatus\": \"NOT_STARTED\",\n        \"mySubmission\": null\n    },\n    {\n        \"id\": 2,\n        \"title\": \"Комплимент дня\",\n        \"description\": \"Напишите комплимент коллеге\",\n        \"reward\": 300,\n        \"type\": \"TEXT\",\n        \"myStatus\": \"PENDING\",\n        \"mySubmission\": {\n            \"id\": 1,\n            \"submitterId\": 2,\n            \"submitterLogin\": \"masha\",\n            \"submitterFirstName\": \"Мария\",\n            \"submitterLastName\": \"Иванова\",\n            \"submitterDepartment\": \"Бухгалтерия\",\n            \"participants\": [{\"id\": 2, \"login\": \"masha\", \"firstName\": \"Мария\", \"lastName\": \"Иванова\", \"department\": \"Бухгалтерия\", \"avatarUrl\": null}],\n            \"status\": \"PENDING\",\n            \"text\": \"Ты лучшая коллега!\",\n            \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n            \"photoUrls\": []\n        }\n    }\n]",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -361,7 +622,7 @@
 							"name": "200 - Success",
 							"status": "OK",
 							"code": 200,
-							"body": "{\n    \"id\": 1,\n    \"title\": \"Селфи с коллегой\",\n    \"description\": \"Сделайте совместное селфи с коллегой из другого отдела\",\n    \"reward\": 500,\n    \"type\": \"PHOTO\",\n    \"myStatus\": \"NOT_STARTED\",\n    \"mySubmissionId\": null\n}",
+							"body": "{\n    \"id\": 1,\n    \"title\": \"Селфи с коллегой\",\n    \"description\": \"Сделайте совместное селфи с коллегой из другого отдела\",\n    \"reward\": 500,\n    \"type\": \"PHOTO\",\n    \"myStatus\": \"NOT_STARTED\",\n    \"mySubmission\": null\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -403,14 +664,14 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["tasks", "2", "submit"]
 						},
-						"description": "Отправка текстового ответа (без участников — solo).\n\n**Auth:** Bearer token\n\n**Content-Type:** multipart/form-data\n\n**Параметры:**\n| Поле | Тип | Обязательно | Описание |\n|------|-----|-------------|----------|\n| text | String | зависит от типа задания | Текстовый ответ |\n| photos | File[] | зависит от типа задания | Фото |\n| participantIds | Long[] | нет | ID участников (без себя) |\n\n**Response:** `SubmissionResponse`"
+						"description": "Отправка текстового ответа (без участников — solo).\n\n**Auth:** Bearer token\n\n**Content-Type:** multipart/form-data\n\n**Ограничения:**\n- Текст: до 5000 символов\n- Фото: до 5 штук, до 10 МБ каждое\n- Только image/* формат\n\n**Параметры:**\n| Поле | Тип | Обязательно | Описание |\n|------|-----|-------------|----------|\n| text | String | зависит от типа задания | Текстовый ответ |\n| photos | File[] | зависит от типа задания | Фото |\n| participantIds | Long[] | нет | ID участников (без себя) |\n\n**Response:** `SubmissionResponse` (201 Created)"
 					},
 					"response": [
 						{
-							"name": "200 - Success",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"id\": 1,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"department\": \"Бухгалтерия\"\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": \"Ты лучшая коллега!\",\n    \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n    \"photoIds\": []\n}",
+							"name": "201 - Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"id\": 1,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterFirstName\": \"Мария\",\n    \"submitterLastName\": \"Иванова\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"firstName\": \"Мария\",\n            \"lastName\": \"Иванова\",\n            \"department\": \"Бухгалтерия\",\n            \"avatarUrl\": null\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": \"Ты лучшая коллега!\",\n    \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n    \"photoUrls\": []\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -441,6 +702,18 @@
 									"value": "application/json"
 								}
 							]
+						},
+						{
+							"name": "400 - Too many photos",
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n    \"error\": \"Максимум 5 фото\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
 						}
 					]
 				},
@@ -464,14 +737,14 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["tasks", "1", "submit"]
 						},
-						"description": "Отправка фото-ответа (без участников).\n\n**Response:** `SubmissionResponse`"
+						"description": "Отправка фото-ответа (без участников).\n\n**Response:** `SubmissionResponse` (201 Created)"
 					},
 					"response": [
 						{
-							"name": "200 - Success",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"id\": 2,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"department\": \"Бухгалтерия\"\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": null,\n    \"createdAtEpoch\": \"2026-03-08T10:31:00\",\n    \"photoIds\": [1]\n}",
+							"name": "201 - Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"id\": 2,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterFirstName\": \"Мария\",\n    \"submitterLastName\": \"Иванова\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"firstName\": \"Мария\",\n            \"lastName\": \"Иванова\",\n            \"department\": \"Бухгалтерия\",\n            \"avatarUrl\": null\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": null,\n    \"createdAtEpoch\": \"2026-03-08T10:31:00\",\n    \"photoUrls\": [\"/api/tasks/photos/1\"]\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -512,14 +785,14 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["tasks", "3", "submit"]
 						},
-						"description": "Отправка ответа с участником. Submitter (текущий юзер) автоматически добавляется в participants.\n\n**participantIds** — список ID юзеров-напарников (без себя).\n\nПри approve все участники получат баллы и у всех задание пометится как выполненное.\n\n**Response:** `SubmissionResponse`"
+						"description": "Отправка ответа с участником. Submitter (текущий юзер) автоматически добавляется в participants.\n\n**participantIds** — список ID юзеров-напарников (без себя).\n\nПри approve все участники получат баллы и у всех задание пометится как выполненное.\n\n**Response:** `SubmissionResponse` (201 Created)"
 					},
 					"response": [
 						{
-							"name": "200 - Success (group)",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"id\": 3,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"department\": \"Бухгалтерия\"\n        },\n        {\n            \"id\": 3,\n            \"login\": \"katya\",\n            \"department\": \"Отдел продаж\"\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": \"Букет для Марии из отдела продаж\",\n    \"createdAtEpoch\": \"2026-03-08T10:35:00\",\n    \"photoIds\": [2]\n}",
+							"name": "201 - Success (group)",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"id\": 3,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterFirstName\": \"Мария\",\n    \"submitterLastName\": \"Иванова\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"firstName\": \"Мария\",\n            \"lastName\": \"Иванова\",\n            \"department\": \"Бухгалтерия\",\n            \"avatarUrl\": null\n        },\n        {\n            \"id\": 3,\n            \"login\": \"katya\",\n            \"firstName\": \"Екатерина\",\n            \"lastName\": \"Петрова\",\n            \"department\": \"Отдел продаж\",\n            \"avatarUrl\": null\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": \"Букет для Марии из отдела продаж\",\n    \"createdAtEpoch\": \"2026-03-08T10:35:00\",\n    \"photoUrls\": [\"/api/tasks/photos/2\"]\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -567,40 +840,14 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["tasks", "5", "submit"]
 						},
-						"description": "Командное фото с участником.\n\n**Response:** `SubmissionResponse`"
+						"description": "Командное фото с участником.\n\n**Response:** `SubmissionResponse` (201 Created)"
 					},
 					"response": [
 						{
-							"name": "200 - Success",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"id\": 4,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"department\": \"Бухгалтерия\"\n        },\n        {\n            \"id\": 3,\n            \"login\": \"katya\",\n            \"department\": \"Отдел продаж\"\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": null,\n    \"createdAtEpoch\": \"2026-03-08T10:40:00\",\n    \"photoIds\": [3]\n}",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							]
-						}
-					]
-				},
-				{
-					"name": "Get Budget",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/tasks/budget",
-							"host": ["{{baseUrl}}"],
-							"path": ["tasks", "budget"]
-						},
-						"description": "Статистика бюджета.\n\n- **totalBudget** = сумма наград всех заданий * кол-во юзеров\n- **approvedBudget** = сумма наград одобренных ответов (с учётом кол-ва участников)\n\n**Auth:** Bearer token\n\n**Response:** `BudgetResponse`"
-					},
-					"response": [
-						{
-							"name": "200 - Success",
-							"status": "OK",
-							"code": 200,
-							"body": "{\n    \"totalBudget\": 7500,\n    \"approvedBudget\": 1400\n}",
+							"name": "201 - Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"id\": 4,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterFirstName\": \"Мария\",\n    \"submitterLastName\": \"Иванова\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"firstName\": \"Мария\",\n            \"lastName\": \"Иванова\",\n            \"department\": \"Бухгалтерия\",\n            \"avatarUrl\": null\n        },\n        {\n            \"id\": 3,\n            \"login\": \"katya\",\n            \"firstName\": \"Екатерина\",\n            \"lastName\": \"Петрова\",\n            \"department\": \"Отдел продаж\",\n            \"avatarUrl\": null\n        }\n    ],\n    \"status\": \"PENDING\",\n    \"text\": null,\n    \"createdAtEpoch\": \"2026-03-08T10:40:00\",\n    \"photoUrls\": [\"/api/tasks/photos/3\"]\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -619,9 +866,21 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["tasks", "photos", "1"]
 						},
-						"description": "Скачать фото по ID.\n\n**Auth:** Bearer token\n\n**Response:** binary (image/jpeg, image/png, etc.)"
+						"description": "Скачать фото по ID. Доступ только для участников submission или админов.\n\n**Auth:** Bearer token\n\n**Response:** binary (image/jpeg, image/png, etc.)\n\n**Response headers:**\n- `X-Content-Type-Options: nosniff`\n- `Content-Disposition: inline`"
 					},
 					"response": [
+						{
+							"name": "403 - Not a participant",
+							"status": "Forbidden",
+							"code": 403,
+							"body": "{\n    \"error\": \"Нет доступа к этому фото\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
 						{
 							"name": "404 - Not found",
 							"status": "Not Found",
@@ -667,7 +926,19 @@
 							"name": "200 - Success",
 							"status": "OK",
 							"code": 200,
-							"body": "[\n    {\n        \"id\": 1,\n        \"taskId\": 2,\n        \"taskTitle\": \"Комплимент дня\",\n        \"taskReward\": 300,\n        \"submitterId\": 2,\n        \"submitterLogin\": \"masha\",\n        \"submitterDepartment\": \"Бухгалтерия\",\n        \"participants\": [\n            {\n                \"id\": 2,\n                \"login\": \"masha\",\n                \"department\": \"Бухгалтерия\"\n            }\n        ],\n        \"status\": \"PENDING\",\n        \"text\": \"Ты лучшая коллега!\",\n        \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n        \"photoIds\": []\n    },\n    {\n        \"id\": 3,\n        \"taskId\": 3,\n        \"taskTitle\": \"Цветочный букет\",\n        \"taskReward\": 700,\n        \"submitterId\": 2,\n        \"submitterLogin\": \"masha\",\n        \"submitterDepartment\": \"Бухгалтерия\",\n        \"participants\": [\n            {\n                \"id\": 2,\n                \"login\": \"masha\",\n                \"department\": \"Бухгалтерия\"\n            },\n            {\n                \"id\": 3,\n                \"login\": \"katya\",\n                \"department\": \"Отдел продаж\"\n            }\n        ],\n        \"status\": \"PENDING\",\n        \"text\": \"Букет для Марии из отдела продаж\",\n        \"createdAtEpoch\": \"2026-03-08T10:35:00\",\n        \"photoIds\": [2]\n    }\n]",
+							"body": "[\n    {\n        \"id\": 1,\n        \"taskId\": 2,\n        \"taskTitle\": \"Комплимент дня\",\n        \"taskReward\": 300,\n        \"submitterId\": 2,\n        \"submitterLogin\": \"masha\",\n        \"submitterFirstName\": \"Мария\",\n        \"submitterLastName\": \"Иванова\",\n        \"submitterDepartment\": \"Бухгалтерия\",\n        \"participants\": [\n            {\n                \"id\": 2,\n                \"login\": \"masha\",\n                \"firstName\": \"Мария\",\n                \"lastName\": \"Иванова\",\n                \"department\": \"Бухгалтерия\",\n                \"avatarUrl\": null\n            }\n        ],\n        \"status\": \"PENDING\",\n        \"text\": \"Ты лучшая коллега!\",\n        \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n        \"photoUrls\": []\n    }\n]",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "403 - Not admin",
+							"status": "Forbidden",
+							"code": 403,
+							"body": "{\n    \"error\": \"Доступ запрещён\"\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -800,7 +1071,7 @@
 							"name": "200 - Approved",
 							"status": "OK",
 							"code": 200,
-							"body": "{\n    \"id\": 1,\n    \"taskId\": 2,\n    \"taskTitle\": \"Комплимент дня\",\n    \"taskReward\": 300,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"department\": \"Бухгалтерия\"\n        }\n    ],\n    \"status\": \"APPROVED\",\n    \"text\": \"Ты лучшая коллега!\",\n    \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n    \"photoIds\": []\n}",
+							"body": "{\n    \"id\": 1,\n    \"taskId\": 2,\n    \"taskTitle\": \"Комплимент дня\",\n    \"taskReward\": 300,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterFirstName\": \"Мария\",\n    \"submitterLastName\": \"Иванова\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"firstName\": \"Мария\",\n            \"lastName\": \"Иванова\",\n            \"department\": \"Бухгалтерия\",\n            \"avatarUrl\": null\n        }\n    ],\n    \"status\": \"APPROVED\",\n    \"text\": \"Ты лучшая коллега!\",\n    \"createdAtEpoch\": \"2026-03-08T10:30:00\",\n    \"photoUrls\": []\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -870,7 +1141,7 @@
 							"name": "200 - Rejected",
 							"status": "OK",
 							"code": 200,
-							"body": "{\n    \"id\": 2,\n    \"taskId\": 1,\n    \"taskTitle\": \"Селфи с коллегой\",\n    \"taskReward\": 500,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"department\": \"Бухгалтерия\"\n        },\n        {\n            \"id\": 3,\n            \"login\": \"katya\",\n            \"department\": \"Отдел продаж\"\n        }\n    ],\n    \"status\": \"REJECTED\",\n    \"text\": null,\n    \"createdAtEpoch\": \"2026-03-08T10:31:00\",\n    \"photoIds\": [1]\n}",
+							"body": "{\n    \"id\": 2,\n    \"taskId\": 1,\n    \"taskTitle\": \"Селфи с коллегой\",\n    \"taskReward\": 500,\n    \"submitterId\": 2,\n    \"submitterLogin\": \"masha\",\n    \"submitterFirstName\": \"Мария\",\n    \"submitterLastName\": \"Иванова\",\n    \"submitterDepartment\": \"Бухгалтерия\",\n    \"participants\": [\n        {\n            \"id\": 2,\n            \"login\": \"masha\",\n            \"firstName\": \"Мария\",\n            \"lastName\": \"Иванова\",\n            \"department\": \"Бухгалтерия\",\n            \"avatarUrl\": null\n        },\n        {\n            \"id\": 3,\n            \"login\": \"katya\",\n            \"firstName\": \"Екатерина\",\n            \"lastName\": \"Петрова\",\n            \"department\": \"Отдел продаж\",\n            \"avatarUrl\": null\n        }\n    ],\n    \"status\": \"REJECTED\",\n    \"text\": null,\n    \"createdAtEpoch\": \"2026-03-08T10:31:00\",\n    \"photoUrls\": [\"/api/tasks/photos/1\"]\n}",
 							"header": [
 								{
 									"key": "Content-Type",
@@ -879,6 +1150,159 @@
 							]
 						}
 					]
+				},
+				{
+					"name": "Get Budget",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/admin/budget",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "budget"]
+						},
+						"description": "Статистика бюджета. Только для админов.\n\n- **totalBudget** = сумма наград всех заданий * кол-во юзеров (без админов)\n- **approvedBudget** = сумма наград одобренных ответов (с учётом кол-ва участников)\n\n**Auth:** Bearer token (ADMIN)\n\n**Response:** `BudgetResponse`"
+					},
+					"response": [
+						{
+							"name": "200 - Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"totalBudget\": 7500,\n    \"approvedBudget\": 1400\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						},
+						{
+							"name": "403 - Not admin",
+							"status": "Forbidden",
+							"code": 403,
+							"body": "{\n    \"error\": \"Доступ запрещён\"\n}",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Monitoring (Admin)",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8080/internal/monitor/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["internal", "monitor", "health"]
+						},
+						"description": "Статус здоровья приложения.\n\n**Auth:** Bearer token (ADMIN)\n\n**Путь изменён:** `/actuator/health` → `/internal/monitor/health`"
+					},
+					"response": []
+				},
+				{
+					"name": "HTTP Exchanges",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8080/internal/monitor/httpexchanges",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["internal", "monitor", "httpexchanges"]
+						},
+						"description": "Последние HTTP запросы к API.\n\n**Auth:** Bearer token (ADMIN)\n\n**Доступно только в dev-профиле**"
+					},
+					"response": []
+				},
+				{
+					"name": "Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8080/internal/monitor/info",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["internal", "monitor", "info"]
+						},
+						"description": "Информация о приложении.\n\n**Auth:** Bearer token (ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "JVM Memory",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:8080/internal/monitor/metrics/jvm.memory.used",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8080",
+							"path": ["internal", "monitor", "metrics", "jvm.memory.used"]
+						},
+						"description": "Использование памяти JVM.\n\n**Auth:** Bearer token (ADMIN)"
+					},
+					"response": []
 				}
 			]
 		}

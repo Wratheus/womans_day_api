@@ -13,4 +13,5 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String department;
+    private String avatarUrl;
 }

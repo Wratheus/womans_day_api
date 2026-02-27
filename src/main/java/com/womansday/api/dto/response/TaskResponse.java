@@ -16,5 +16,5 @@ public class TaskResponse {
     private TaskType type;
     private Boolean collaborative;
     private String myStatus;
-    private Long mySubmissionId;
+    private SubmissionResponse mySubmission;
 }

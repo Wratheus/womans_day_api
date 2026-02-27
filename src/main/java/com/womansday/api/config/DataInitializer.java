@@ -7,6 +7,7 @@ import com.womansday.api.enums.TaskType;
 import com.womansday.api.repository.TaskRepository;
 import com.womansday.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -22,13 +23,27 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${admin.login}")
+    private String adminLogin;
+
+    @Value("${admin.password}")
+    private String adminPassword;
+
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     @Override
     public void run(String... args) {
-        // Создаём админа если нет ни одного пользователя
+        if (activeProfile.contains("prod") && (adminPassword == null || adminPassword.isBlank())) {
+            throw new IllegalStateException(
+                    "Admin password must be configured for production! " +
+                    "Set ADMIN_PASSWORD environment variable.");
+        }
+
         if (userRepository.count() == 0) {
             User admin = User.builder()
-                    .login("admin")
-                    .passwordHash(passwordEncoder.encode("admin"))
+                    .login(adminLogin)
+                    .passwordHash(passwordEncoder.encode(adminPassword))
                     .firstName("Админ")
                     .lastName("Администратор")
                     .department("Администрация")
@@ -37,7 +52,6 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(admin);
         }
 
-        // Создаём начальные задания если таблица пустая
         if (taskRepository.count() == 0) {
             List<Task> tasks = List.of(
                     Task.builder()

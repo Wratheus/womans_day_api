@@ -15,5 +15,7 @@ public class AuthResponse {
     private String lastName;
     private String department;
     private Role role;
-    private String token;
+    private String accessToken;
+    private String refreshToken;
+    private Long expiresIn;
 }
