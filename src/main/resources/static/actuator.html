@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -99,10 +99,10 @@
 <div class="login-overlay hidden" id="loginOverlay">
     <div class="login-box">
         <h2>Admin Panel</h2>
-        <div class="login-error" id="loginError">Неверный логин или пароль</div>
-        <input type="text" id="loginInput" placeholder="Логин">
-        <input type="password" id="passwordInput" placeholder="Пароль">
-        <button onclick="doLogin()">Войти</button>
+        <div class="login-error" id="loginError">Invalid login or password</div>
+        <input type="text" id="loginInput" placeholder="Login">
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button onclick="doLogin()">Sign In</button>
     </div>
 </div>
 
@@ -113,36 +113,36 @@
             <h1>WomansDay Admin</h1>
             <span class="env-badge" id="envBadge">...</span>
         </div>
-        <button onclick="doLogout()">Выйти</button>
+        <button onclick="doLogout()">Logout</button>
     </div>
 
     <div class="dashboard">
         <div class="refresh-bar">
             <div class="dot"></div>
-            <span>Автообновление каждые 5 сек &bull; <span id="lastUpdate">-</span></span>
+            <span>Auto-refresh every 5s &bull; <span id="lastUpdate">-</span></span>
         </div>
 
         <!-- Summary cards -->
         <div class="cards">
-            <div class="card"><div class="label">Пользователей</div><div class="value blue" id="userCount">-</div></div>
-            <div class="card"><div class="label">Ответов (всего)</div><div class="value pink" id="submissionCount">-</div></div>
-            <div class="card"><div class="label">Ожидают проверки</div><div class="value yellow" id="pendingCount">-</div></div>
-            <div class="card"><div class="label">Бюджет</div><div class="value green" id="budgetText">-</div></div>
+            <div class="card"><div class="label">Users</div><div class="value blue" id="userCount">-</div></div>
+            <div class="card"><div class="label">Submissions</div><div class="value pink" id="submissionCount">-</div></div>
+            <div class="card"><div class="label">Pending Review</div><div class="value yellow" id="pendingCount">-</div></div>
+            <div class="card"><div class="label">Budget</div><div class="value green" id="budgetText">-</div></div>
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('submissions')">Ответы</button>
-            <button class="tab" onclick="switchTab('requests')">HTTP запросы</button>
-            <button class="tab" onclick="switchTab('health')">Система</button>
+            <button class="tab active" onclick="switchTab('submissions')">Submissions</button>
+            <button class="tab" onclick="switchTab('requests')">HTTP Requests</button>
+            <button class="tab" onclick="switchTab('health')">System</button>
         </div>
 
         <!-- Submissions -->
         <div class="section" id="tab-submissions">
-            <h3>Последние ответы на задания</h3>
+            <h3>Task Submissions</h3>
             <table>
                 <thead>
-                    <tr><th>ID</th><th>Задание</th><th>Отправитель</th><th>Отдел</th><th>Статус</th><th>Время</th><th>Действия</th></tr>
+                    <tr><th>ID</th><th>Task</th><th>Submitter</th><th>Department</th><th>Status</th><th>Time</th><th>Actions</th></tr>
                 </thead>
                 <tbody id="submissionsBody"></tbody>
             </table>
@@ -150,10 +150,10 @@
 
         <!-- HTTP requests -->
         <div class="section hidden" id="tab-requests">
-            <h3>Последние HTTP запросы</h3>
+            <h3>Recent HTTP Requests</h3>
             <table>
                 <thead>
-                    <tr><th>Время</th><th>Метод</th><th>URI</th><th>Статус</th><th>Время (мс)</th></tr>
+                    <tr><th>Time</th><th>Method</th><th>URI</th><th>Status</th><th>Duration (ms)</th></tr>
                 </thead>
                 <tbody id="requestsBody"></tbody>
             </table>
@@ -161,9 +161,9 @@
 
         <!-- Health -->
         <div class="section hidden" id="tab-health">
-            <h3>Состояние системы</h3>
+            <h3>System Health</h3>
             <div class="cards" id="healthCards"></div>
-            <h3 style="margin-top:1rem">Метрики JVM</h3>
+            <h3 style="margin-top:1rem">JVM Metrics</h3>
             <div class="cards" id="metricsCards"></div>
         </div>
     </div>
@@ -193,7 +193,7 @@
             if (!res.ok) throw new Error();
             const data = await res.json();
             if (data.role !== 'admin') {
-                document.getElementById('loginError').textContent = 'Доступ только для администраторов';
+                document.getElementById('loginError').textContent = 'Admin access only';
                 document.getElementById('loginError').style.display = 'block';
                 return;
             }
@@ -257,7 +257,7 @@
 
     // --- Data loading ---
     async function refreshAll() {
-        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ru');
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
         await Promise.allSettled([
             loadSummary(),
             loadSubmissions(),
@@ -272,12 +272,12 @@
         try {
             const [users, budget, submissions] = await Promise.all([
                 api('/api/users'),
-                api('/api/admin/budget'),
+                api('/api/tasks/budget'),
                 api('/api/admin/submissions')
             ]);
             document.getElementById('userCount').textContent = users.length;
             document.getElementById('submissionCount').textContent = submissions.length;
-            document.getElementById('pendingCount').textContent = submissions.filter(s => s.status === 'PENDING').length;
+            document.getElementById('pendingCount').textContent = submissions.filter(s => s.status === 'pending').length;
             document.getElementById('budgetText').textContent = `${budget.approvedBudget} / ${budget.totalBudget}`;
         } catch {}
     }
@@ -290,9 +290,9 @@
                 const name = s.submitterFirstName
                     ? escapeHtml(s.submitterFirstName) + ' ' + escapeHtml(s.submitterLastName)
                     : escapeHtml(s.submitterLogin);
-                const actions = s.status === 'PENDING'
-                    ? `<button class="btn-sm btn-approve" onclick="reviewSubmission(${s.id}, true)">Одобрить</button>` +
-                      `<button class="btn-sm btn-reject" onclick="reviewSubmission(${s.id}, false)">Отклонить</button>`
+                const actions = s.status === 'pending'
+                    ? `<button class="btn-sm btn-approve" onclick="reviewSubmission(${s.id}, true)">Approve</button>` +
+                      `<button class="btn-sm btn-reject" onclick="reviewSubmission(${s.id}, false)">Reject</button>`
                     : '';
                 return `
                     <tr>
@@ -301,7 +301,7 @@
                         <td>${name}</td>
                         <td>${escapeHtml(s.submitterDepartment)}</td>
                         <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
-                        <td class="mono">${new Date(s.createdAtEpoch).toLocaleString('ru')}</td>
+                        <td class="mono">${new Date(s.createdAtEpoch).toLocaleString()}</td>
                         <td>${actions}</td>
                     </tr>
                 `;
@@ -332,7 +332,7 @@
                 const statusClass = status < 300 ? 'status-2xx' : status < 500 ? 'status-4xx' : 'status-5xx';
                 return `
                     <tr>
-                        <td class="mono">${new Date(e.timestamp).toLocaleTimeString('ru')}</td>
+                        <td class="mono">${new Date(e.timestamp).toLocaleTimeString()}</td>
                         <td><span class="badge badge-${method.toLowerCase()}">${method}</span></td>
                         <td class="mono">${escapeHtml(uri)}</td>
                         <td class="${statusClass}">${status}</td>
@@ -350,7 +350,7 @@
             const status = data.status;
             container.innerHTML = `
                 <div class="card">
-                    <div class="label">Статус</div>
+                    <div class="label">Status</div>
                     <div class="value ${status === 'UP' ? 'green' : 'pink'}">${escapeHtml(status)}</div>
                 </div>
             `;
@@ -378,10 +378,10 @@
             let html = '';
             if (mem.status === 'fulfilled') {
                 const mb = (mem.value.measurements[0].value / 1048576).toFixed(0);
-                html += `<div class="card"><div class="label">Память JVM</div><div class="value blue">${mb} MB</div></div>`;
+                html += `<div class="card"><div class="label">JVM Memory</div><div class="value blue">${mb} MB</div></div>`;
             }
             if (threads.status === 'fulfilled') {
-                html += `<div class="card"><div class="label">Потоки</div><div class="value blue">${threads.value.measurements[0].value}</div></div>`;
+                html += `<div class="card"><div class="label">Threads</div><div class="value blue">${threads.value.measurements[0].value}</div></div>`;
             }
             if (cpu.status === 'fulfilled') {
                 const pct = (cpu.value.measurements[0].value * 100).toFixed(1);

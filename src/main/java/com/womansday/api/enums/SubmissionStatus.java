@@ -7,7 +7,8 @@ public enum SubmissionStatus {
     WAITING_FOR_PARTICIPANTS("waitingForParticipants"),
     PENDING("pending"),
     APPROVED("approved"),
-    REJECTED("rejected");
+    REJECTED("rejected"),
+    CANCELLED("cancelled");
 
     private final String value;
 

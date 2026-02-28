@@ -15,7 +15,7 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
     List<TaskSubmission> findByStatusOrderByCreatedAtEpochAsc(SubmissionStatus status);
 
     @Query("SELECT s FROM TaskSubmission s ORDER BY " +
-            "CASE s.status WHEN 'PENDING' THEN 0 WHEN 'WAITING_FOR_PARTICIPANTS' THEN 1 WHEN 'REJECTED' THEN 2 WHEN 'APPROVED' THEN 3 END, " +
+            "CASE s.status WHEN 'PENDING' THEN 0 WHEN 'WAITING_FOR_PARTICIPANTS' THEN 1 WHEN 'REJECTED' THEN 2 WHEN 'APPROVED' THEN 3 WHEN 'CANCELLED' THEN 4 END, " +
             "s.createdAtEpoch ASC")
     List<TaskSubmission> findAllOrderByStatusAndCreatedAtEpoch();
 

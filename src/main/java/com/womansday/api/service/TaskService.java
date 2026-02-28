@@ -193,7 +193,12 @@ public class TaskService {
         submission.getPendingParticipants().remove(user);
 
         if (submission.getPendingParticipants().isEmpty()) {
-            submission.setStatus(SubmissionStatus.PENDING);
+            boolean hasAcceptedParticipants = submission.getParticipants().size() > 1;
+            if (hasAcceptedParticipants) {
+                submission.setStatus(SubmissionStatus.PENDING);
+            } else {
+                submission.setStatus(SubmissionStatus.CANCELLED);
+            }
         }
 
         submissionRepository.save(submission);
@@ -289,14 +294,14 @@ public class TaskService {
 
         if (!userSubmissions.isEmpty()) {
             TaskSubmission latest = userSubmissions.get(0);
-            myStatus = latest.getStatus().name();
+            myStatus = latest.getStatus().value();
             mySubmission = toSubmissionResponse(latest);
         } else {
             List<TaskSubmission> pendingInvitations =
                     submissionRepository.findByPendingParticipantAndTaskId(userId, task.getId());
             if (!pendingInvitations.isEmpty()) {
                 TaskSubmission invitation = pendingInvitations.get(0);
-                myStatus = "INVITED";
+                myStatus = "invited";
                 mySubmission = toSubmissionResponse(invitation);
             }
         }
