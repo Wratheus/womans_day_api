@@ -23,7 +23,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
+      ADMIN_LOGIN: ${ADMIN_LOGIN}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       CORS_ORIGINS: ${CORS_ORIGINS}
       PHOTOS_DIR: /app/photos
@@ -41,11 +41,11 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       DB_HOST: db
       DB_NAME: ${DB_NAME}_dev
-      DB_USER: ${DB_USER}_dev
-      DB_PASSWORD: ${DB_PASSWORD}_dev
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-for-local-development-only}
-      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-devpassword}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_LOGIN: ${ADMIN_LOGIN}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       PHOTOS_DIR: /app/photos
     depends_on:
       - db
