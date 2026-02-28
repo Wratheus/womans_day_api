@@ -299,9 +299,12 @@
 					"request": {
 						"method": "POST",
 						"url": {
-							"raw": "{{baseUrl}}/api/tasks/submissions/1/accept",
+							"raw": "{{baseUrl}}/api/tasks/submissions/1/respond?accept=true",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "submissions", "1", "accept"]
+							"path": ["api", "tasks", "submissions", "1", "respond"],
+							"query": [
+								{ "key": "accept", "value": "true" }
+							]
 						},
 						"description": "Accept a co-participation invitation. When all participants accept, submission status becomes `pending`."
 					}
@@ -311,9 +314,12 @@
 					"request": {
 						"method": "POST",
 						"url": {
-							"raw": "{{baseUrl}}/api/tasks/submissions/1/decline",
+							"raw": "{{baseUrl}}/api/tasks/submissions/1/respond?accept=false",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "submissions", "1", "decline"]
+							"path": ["api", "tasks", "submissions", "1", "respond"],
+							"query": [
+								{ "key": "accept", "value": "false" }
+							]
 						},
 						"description": "Decline a co-participation invitation. If all decline and no one accepted, submission is `cancelled`."
 					}

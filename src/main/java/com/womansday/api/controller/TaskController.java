@@ -51,21 +51,17 @@ public class TaskController {
                 .body(taskService.submitTask(id, userId, text, photos, participantIds));
     }
 
-    @PostMapping("/submissions/{submissionId}/accept")
-    public ResponseEntity<Void> acceptInvitation(
+    @PostMapping("/submissions/{submissionId}/respond")
+    public ResponseEntity<Void> respondToInvitation(
             @PathVariable Long submissionId,
+            @RequestParam boolean accept,
             Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        taskService.acceptInvitation(submissionId, userId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/submissions/{submissionId}/decline")
-    public ResponseEntity<Void> declineInvitation(
-            @PathVariable Long submissionId,
-            Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
-        taskService.declineInvitation(submissionId, userId);
+        if (accept) {
+            taskService.acceptInvitation(submissionId, userId);
+        } else {
+            taskService.declineInvitation(submissionId, userId);
+        }
         return ResponseEntity.ok().build();
     }
 
