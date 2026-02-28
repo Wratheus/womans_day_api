@@ -172,6 +172,7 @@
 <script>
     const BASE = window.location.origin;
     let token = localStorage.getItem('admin_token');
+    let refreshToken = localStorage.getItem('admin_refresh_token');
     let refreshInterval;
 
     // --- XSS protection ---
@@ -198,7 +199,9 @@
                 return;
             }
             token = data.accessToken;
+            refreshToken = data.refreshToken;
             localStorage.setItem('admin_token', token);
+            localStorage.setItem('admin_refresh_token', refreshToken);
             showApp();
         } catch {
             document.getElementById('loginError').style.display = 'block';
@@ -206,16 +209,19 @@
     }
 
     async function doLogout() {
-        if (token) {
+        if (refreshToken) {
             try {
                 await fetch(`${BASE}/api/auth/logout`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken })
                 });
             } catch {}
         }
         token = null;
+        refreshToken = null;
         localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_refresh_token');
         document.getElementById('app').classList.add('hidden');
         document.getElementById('loginOverlay').classList.remove('hidden');
         clearInterval(refreshInterval);

@@ -14,12 +14,14 @@ import java.time.Instant;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.regex.Pattern;
 
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_REQUESTS = 10;
     private static final long WINDOW_MS = 60_000;
+    private static final Pattern SUBMIT_PATH = Pattern.compile("/api/tasks/\\d+/submit");
 
     private final ConcurrentHashMap<String, Deque<Instant>> requests = new ConcurrentHashMap<>();
 
@@ -28,7 +30,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return !path.equals("/api/auth/login")
                 && !path.equals("/api/auth/register")
-                && !path.matches("/api/tasks/\\d+/submit");
+                && !SUBMIT_PATH.matcher(path).matches();
     }
 
     @Override

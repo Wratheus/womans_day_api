@@ -10,8 +10,6 @@ import java.util.List;
 
 public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, Long> {
 
-    List<TaskSubmission> findByTaskId(Long taskId);
-
     List<TaskSubmission> findByStatusOrderByCreatedAtEpochAsc(SubmissionStatus status);
 
     @Query("SELECT s FROM TaskSubmission s ORDER BY " +
@@ -29,7 +27,7 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
             "WHERE p.id = :userId AND s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED', 'WAITING_FOR_PARTICIPANTS')")
     boolean hasActiveSubmission(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
-    @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p WHERE s.status = :status")
+    @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s WHERE s.status = :status")
     long sumRewardsByStatus(@Param("status") SubmissionStatus status);
 
     @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p " +

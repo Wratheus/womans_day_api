@@ -301,7 +301,7 @@ public class TaskService {
                     submissionRepository.findByPendingParticipantAndTaskId(userId, task.getId());
             if (!pendingInvitations.isEmpty()) {
                 TaskSubmission invitation = pendingInvitations.get(0);
-                myStatus = "invited";
+                myStatus = SubmissionStatus.INVITED.value();
                 mySubmission = toSubmissionResponse(invitation);
             }
         }
