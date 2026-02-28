@@ -26,7 +26,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !path.equals("/api/auth/login") && !path.equals("/api/auth/register");
+        return !path.equals("/api/auth/login")
+                && !path.equals("/api/auth/register")
+                && !path.matches("/api/tasks/\\d+/submit");
     }
 
     @Override
@@ -40,7 +42,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         Deque<Instant> timestamps = requests.computeIfAbsent(ip, k -> new ConcurrentLinkedDeque<>());
 
-        // Удалить старые записи
         while (!timestamps.isEmpty() && timestamps.peekFirst().isBefore(windowStart)) {
             timestamps.pollFirst();
         }
@@ -49,7 +50,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             response.setStatus(429);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"error\":\"Слишком много запросов. Попробуйте через минуту\"}");
+            response.getWriter().write(
+                    "{\"status\":429,\"error\":\"Too Many Requests\",\"message\":\"Too many requests. Try again later\"}");
             return;
         }
 

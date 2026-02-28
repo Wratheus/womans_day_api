@@ -15,7 +15,8 @@ public class SecurityExceptionHandlers {
             response.setStatus(401);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"error\":\"Требуется авторизация\"}");
+            response.getWriter().write(
+                    "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
         };
     }
 
@@ -25,7 +26,8 @@ public class SecurityExceptionHandlers {
             response.setStatus(403);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"error\":\"Доступ запрещён\"}");
+            response.getWriter().write(
+                    "{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
         };
     }
 }

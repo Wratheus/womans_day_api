@@ -12,5 +12,5 @@ public class MeResponse {
     private String firstName;
     private String lastName;
     private Long balance;
-    private String avatarUrl;
+    private boolean hasAvatar;
 }

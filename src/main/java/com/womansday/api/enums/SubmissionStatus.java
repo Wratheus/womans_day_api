@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum SubmissionStatus {
     NOT_STARTED("notStarted"),
+    WAITING_FOR_PARTICIPANTS("waitingForParticipants"),
     PENDING("pending"),
     APPROVED("approved"),
     REJECTED("rejected");

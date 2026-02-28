@@ -7,20 +7,20 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
 
-    @NotBlank(message = "Логин обязателен")
-    @Size(min = 3, max = 50, message = "Логин от 3 до 50 символов")
+    @NotBlank(message = "Login is required")
+    @Size(min = 3, max = 50, message = "Login requires from 3 to 50 symbols")
     private String login;
 
-    @NotBlank(message = "Пароль обязателен")
-    @Size(min = 4, max = 100, message = "Пароль от 4 до 100 символов")
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, max = 100, message = "Password requires from 8 to 100 symbols")
     private String password;
 
-    @NotBlank(message = "Имя обязательно")
+    @NotBlank(message = "Name is required")
     private String firstName;
 
-    @NotBlank(message = "Фамилия обязательна")
+    @NotBlank(message = "LastName is required")
     private String lastName;
 
-    @NotBlank(message = "Отдел обязателен")
+    @NotBlank(message = "Department is required")
     private String department;
 }

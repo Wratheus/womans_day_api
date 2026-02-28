@@ -18,8 +18,9 @@ public class SubmissionResponse {
     private String submitterLastName;
     private String submitterDepartment;
     private List<UserResponse> participants;
+    private List<UserResponse> pendingParticipants;
     private SubmissionStatus status;
     private String text;
     private Long createdAtEpoch;
-    private List<String> photoUrls;
+    private List<Long> photoIds;
 }

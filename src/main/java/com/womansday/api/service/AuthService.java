@@ -28,7 +28,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByLogin(request.getLogin())) {
-            throw new BusinessLogicException("Логин уже занят");
+            throw new BusinessLogicException("Login is already taken");
         }
 
         User user = User.builder()
@@ -47,10 +47,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByLogin(request.getLogin())
-                .orElseThrow(() -> new BusinessLogicException("Неверный логин или пароль"));
+                .orElseThrow(() -> new BusinessLogicException("Invalid login or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new BusinessLogicException("Неверный логин или пароль");
+            throw new BusinessLogicException("Invalid login or password");
         }
 
         return buildAuthResponse(user);
@@ -58,22 +58,22 @@ public class AuthService {
 
     public AuthResponse refresh(String refreshToken) {
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new BusinessLogicException("Невалидный refresh token");
+            throw new BusinessLogicException("Invalid refresh token");
         }
 
         String tokenType = jwtTokenProvider.getTokenType(refreshToken);
         if (!"refresh".equals(tokenType)) {
-            throw new BusinessLogicException("Предоставлен неверный тип токена");
+            throw new BusinessLogicException("Invalid token type");
         }
 
         String jti = jwtTokenProvider.getJti(refreshToken);
         if (jti != null && revokedJtis.contains(jti)) {
-            throw new BusinessLogicException("Refresh token отозван");
+            throw new BusinessLogicException("Refresh token has been revoked");
         }
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
+                .orElseThrow(() -> new BusinessLogicException("User not found"));
 
         if (jti != null) {
             revokedJtis.add(jti);

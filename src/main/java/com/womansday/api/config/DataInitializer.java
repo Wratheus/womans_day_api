@@ -34,19 +34,25 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (activeProfile.contains("prod") && (adminPassword == null || adminPassword.isBlank())) {
-            throw new IllegalStateException(
-                    "Admin password must be configured for production! " +
-                    "Set ADMIN_PASSWORD environment variable.");
+        if (activeProfile.contains("prod")) {
+            if (adminPassword == null || adminPassword.isBlank()) {
+                throw new IllegalStateException(
+                        "Admin password must be configured for production! " +
+                        "Set ADMIN_PASSWORD environment variable.");
+            }
+            if (adminPassword.length() < 12) {
+                throw new IllegalStateException(
+                        "Admin password must be at least 12 characters in production!");
+            }
         }
 
         if (userRepository.count() == 0) {
             User admin = User.builder()
                     .login(adminLogin)
                     .passwordHash(passwordEncoder.encode(adminPassword))
-                    .firstName("Админ")
-                    .lastName("Администратор")
-                    .department("Администрация")
+                    .firstName("Admin")
+                    .lastName("Administrator")
+                    .department("Administration")
                     .role(Role.ADMIN)
                     .build();
             userRepository.save(admin);

@@ -15,15 +15,18 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
     List<TaskSubmission> findByStatusOrderByCreatedAtEpochAsc(SubmissionStatus status);
 
     @Query("SELECT s FROM TaskSubmission s ORDER BY " +
-            "CASE s.status WHEN 'PENDING' THEN 0 WHEN 'REJECTED' THEN 1 WHEN 'APPROVED' THEN 2 END, " +
+            "CASE s.status WHEN 'PENDING' THEN 0 WHEN 'WAITING_FOR_PARTICIPANTS' THEN 1 WHEN 'REJECTED' THEN 2 WHEN 'APPROVED' THEN 3 END, " +
             "s.createdAtEpoch ASC")
     List<TaskSubmission> findAllOrderByStatusAndCreatedAtEpoch();
 
     @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId AND s.task.id = :taskId ORDER BY s.createdAtEpoch DESC")
     List<TaskSubmission> findByParticipantAndTaskId(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
+    @Query("SELECT s FROM TaskSubmission s JOIN s.pendingParticipants pp WHERE pp.id = :userId AND s.task.id = :taskId ORDER BY s.createdAtEpoch DESC")
+    List<TaskSubmission> findByPendingParticipantAndTaskId(@Param("userId") Long userId, @Param("taskId") Long taskId);
+
     @Query("SELECT COUNT(s) > 0 FROM TaskSubmission s JOIN s.participants p " +
-            "WHERE p.id = :userId AND s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED')")
+            "WHERE p.id = :userId AND s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED', 'WAITING_FOR_PARTICIPANTS')")
     boolean hasActiveSubmission(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
     @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p WHERE s.status = :status")

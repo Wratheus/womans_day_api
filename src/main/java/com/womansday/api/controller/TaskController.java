@@ -1,5 +1,6 @@
 package com.womansday.api.controller;
 
+import com.womansday.api.dto.response.BudgetResponse;
 import com.womansday.api.dto.response.SubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.entity.SubmissionPhoto;
@@ -50,10 +51,33 @@ public class TaskController {
                 .body(taskService.submitTask(id, userId, text, photos, participantIds));
     }
 
+    @PostMapping("/submissions/{submissionId}/accept")
+    public ResponseEntity<Void> acceptInvitation(
+            @PathVariable Long submissionId,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        taskService.acceptInvitation(submissionId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/submissions/{submissionId}/decline")
+    public ResponseEntity<Void> declineInvitation(
+            @PathVariable Long submissionId,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        taskService.declineInvitation(submissionId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/budget")
+    public ResponseEntity<BudgetResponse> getBudget() {
+        return ResponseEntity.ok(taskService.getBudget());
+    }
+
     @GetMapping("/photos/{photoId}")
     public ResponseEntity<byte[]> getPhoto(@PathVariable Long photoId, Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        String role = extractRole(authentication);
+        String role = extractRoleString(authentication);
 
         SubmissionPhoto photo = taskService.getPhoto(photoId, userId, role);
 
@@ -69,7 +93,7 @@ public class TaskController {
         }
     }
 
-    private String extractRole(Authentication authentication) {
+    private String extractRoleString(Authentication authentication) {
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .filter(a -> a.startsWith("ROLE_"))

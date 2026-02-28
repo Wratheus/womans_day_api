@@ -31,7 +31,7 @@ public class TaskSubmission {
     private Task task;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private SubmissionStatus status;
 
     @Column(columnDefinition = "TEXT")
@@ -55,6 +55,15 @@ public class TaskSubmission {
     )
     @Builder.Default
     private Set<User> participants = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "submission_pending_participants",
+            joinColumns = @JoinColumn(name = "submission_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    @Builder.Default
+    private Set<User> pendingParticipants = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
