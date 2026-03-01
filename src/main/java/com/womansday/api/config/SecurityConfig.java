@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator.html").permitAll()

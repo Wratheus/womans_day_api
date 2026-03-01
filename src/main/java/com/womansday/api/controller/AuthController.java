@@ -1,5 +1,6 @@
 package com.womansday.api.controller;
 
+import com.womansday.api.dto.request.ChangePasswordRequest;
 import com.womansday.api.dto.request.LoginRequest;
 import com.womansday.api.dto.request.RefreshRequest;
 import com.womansday.api.dto.request.RegisterRequest;
@@ -9,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,6 +38,15 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest request) {
         authService.logout(request.getRefreshToken());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        authService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok().build();
     }
 }

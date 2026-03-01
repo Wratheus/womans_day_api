@@ -3,3 +3,10 @@ build/
 *.db
 .idea/
 *.iml
+.git/
+.github/
+*.md
+postman_collection.json
+.env
+.env.*
+src/test/

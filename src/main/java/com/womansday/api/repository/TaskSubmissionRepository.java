@@ -27,10 +27,24 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
             "WHERE p.id = :userId AND s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED', 'WAITING_FOR_PARTICIPANTS')")
     boolean hasActiveSubmission(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
+    @Query("SELECT COUNT(s) > 0 FROM TaskSubmission s JOIN s.pendingParticipants pp " +
+            "WHERE pp.id = :userId AND s.task.id = :taskId AND s.status = 'WAITING_FOR_PARTICIPANTS'")
+    boolean hasPendingInvitation(@Param("userId") Long userId, @Param("taskId") Long taskId);
+
+    @Query("SELECT COUNT(s) > 0 FROM TaskSubmission s " +
+            "WHERE s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED', 'WAITING_FOR_PARTICIPANTS')")
+    boolean hasActiveSubmissionsForTask(@Param("taskId") Long taskId);
+
     @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s WHERE s.status = :status")
     long sumRewardsByStatus(@Param("status") SubmissionStatus status);
 
     @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p " +
             "WHERE p.id = :userId AND s.status = 'APPROVED'")
     long sumApprovedRewardsByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId ORDER BY s.createdAtEpoch DESC")
+    List<TaskSubmission> findByParticipantId(@Param("userId") Long userId);
+
+    @Query("SELECT s FROM TaskSubmission s JOIN s.pendingParticipants pp WHERE pp.id = :userId AND s.status = 'WAITING_FOR_PARTICIPANTS' ORDER BY s.createdAtEpoch DESC")
+    List<TaskSubmission> findPendingInvitationsByUserId(@Param("userId") Long userId);
 }

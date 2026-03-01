@@ -89,6 +89,10 @@ public class JwtTokenProvider {
         return parseToken(token).getId();
     }
 
+    public Date getExpiration(String token) {
+        return parseToken(token).getExpiration();
+    }
+
     public long getAccessExpirationSeconds() {
         return accessExpirationMs / 1000;
     }

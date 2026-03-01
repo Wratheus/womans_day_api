@@ -65,6 +65,15 @@ public class TaskController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/submissions/{submissionId}")
+    public ResponseEntity<Void> cancelSubmission(
+            @PathVariable Long submissionId,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        taskService.cancelSubmission(submissionId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/budget")
     public ResponseEntity<BudgetResponse> getBudget() {
         return ResponseEntity.ok(taskService.getBudget());

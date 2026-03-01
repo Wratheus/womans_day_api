@@ -1,5 +1,7 @@
 package com.womansday.api.service;
 
+import com.womansday.api.dto.request.CreateTaskRequest;
+import com.womansday.api.dto.request.UpdateTaskRequest;
 import com.womansday.api.dto.response.*;
 import com.womansday.api.entity.*;
 import com.womansday.api.enums.Role;
@@ -92,10 +94,11 @@ public class TaskService {
             }
         }
         for (User pending : pendingParticipants) {
-            if (submissionRepository.hasActiveSubmission(pending.getId(), taskId)) {
+            if (submissionRepository.hasActiveSubmission(pending.getId(), taskId)
+                    || submissionRepository.hasPendingInvitation(pending.getId(), taskId)) {
                 throw new BusinessLogicException(
                         "User " + pending.getLogin() +
-                                " already has an active submission for this task");
+                                " already has an active submission or pending invitation for this task");
             }
         }
 
@@ -193,12 +196,7 @@ public class TaskService {
         submission.getPendingParticipants().remove(user);
 
         if (submission.getPendingParticipants().isEmpty()) {
-            boolean hasAcceptedParticipants = submission.getParticipants().size() > 1;
-            if (hasAcceptedParticipants) {
-                submission.setStatus(SubmissionStatus.PENDING);
-            } else {
-                submission.setStatus(SubmissionStatus.CANCELLED);
-            }
+            submission.setStatus(SubmissionStatus.PENDING);
         }
 
         submissionRepository.save(submission);
@@ -217,6 +215,7 @@ public class TaskService {
 
         if (!approved) {
             submission.getPendingParticipants().clear();
+            deleteSubmissionPhotos(submission);
         }
 
         submissionRepository.save(submission);
@@ -265,6 +264,137 @@ public class TaskService {
         }
         return photoRepository.findByIdAndParticipant(photoId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Photo not found"));
+    }
+
+    // --- Admin Task CRUD ---
+
+    @Transactional
+    public TaskResponse createTask(CreateTaskRequest request) {
+        Task task = Task.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .reward(request.getReward())
+                .type(request.getType())
+                .collaborative(Boolean.TRUE.equals(request.getCollaborative()))
+                .build();
+        task = taskRepository.save(task);
+        return toTaskResponseAdmin(task);
+    }
+
+    @Transactional
+    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        if (request.getTitle() != null) task.setTitle(request.getTitle());
+        if (request.getDescription() != null) task.setDescription(request.getDescription());
+        if (request.getReward() != null) task.setReward(request.getReward());
+        if (request.getType() != null) task.setType(request.getType());
+        if (request.getCollaborative() != null) task.setCollaborative(request.getCollaborative());
+
+        taskRepository.save(task);
+        return toTaskResponseAdmin(task);
+    }
+
+    @Transactional
+    public void deleteTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        if (submissionRepository.hasActiveSubmissionsForTask(taskId)) {
+            throw new BusinessLogicException("Cannot delete task with active submissions");
+        }
+
+        taskRepository.delete(task);
+    }
+
+    // --- Cancel Submission ---
+
+    @Transactional
+    public void cancelSubmission(Long submissionId, Long userId) {
+        TaskSubmission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+
+        if (!submission.getSubmitter().getId().equals(userId)) {
+            throw new BusinessLogicException("Only the submitter can cancel a submission");
+        }
+
+        if (submission.getStatus() != SubmissionStatus.PENDING
+                && submission.getStatus() != SubmissionStatus.WAITING_FOR_PARTICIPANTS) {
+            throw new BusinessLogicException("This submission cannot be cancelled");
+        }
+
+        submission.setStatus(SubmissionStatus.CANCELLED);
+        submission.getPendingParticipants().clear();
+        deleteSubmissionPhotos(submission);
+        submissionRepository.save(submission);
+    }
+
+    // --- My Submissions & Invitations ---
+
+    @Transactional(readOnly = true)
+    public List<SubmissionResponse> getMySubmissions(Long userId) {
+        return submissionRepository.findByParticipantId(userId).stream()
+                .map(this::toSubmissionResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SubmissionResponse> getMyInvitations(Long userId) {
+        return submissionRepository.findPendingInvitationsByUserId(userId).stream()
+                .map(this::toSubmissionResponse)
+                .collect(Collectors.toList());
+    }
+
+    // --- Leaderboard ---
+
+    @Transactional(readOnly = true)
+    public List<LeaderboardEntry> getLeaderboard() {
+        List<User> users = userRepository.findByRoleNot(Role.ADMIN);
+        List<LeaderboardEntry> entries = new ArrayList<>();
+
+        for (User user : users) {
+            long earned = submissionRepository.sumApprovedRewardsByUserId(user.getId());
+            entries.add(LeaderboardEntry.builder()
+                    .userId(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .department(user.getDepartment())
+                    .hasAvatar(user.getAvatarPath() != null)
+                    .earned(earned)
+                    .build());
+        }
+
+        entries.sort(Comparator.comparingLong(LeaderboardEntry::getEarned).reversed());
+
+        int rank = 1;
+        for (LeaderboardEntry entry : entries) {
+            entry.setRank(rank++);
+        }
+
+        return entries;
+    }
+
+    // --- Helpers ---
+
+    private void deleteSubmissionPhotos(TaskSubmission submission) {
+        for (SubmissionPhoto photo : submission.getPhotos()) {
+            try {
+                photoStorageService.delete(photo.getFilePath());
+            } catch (IOException ignored) {
+            }
+        }
+    }
+
+    private TaskResponse toTaskResponseAdmin(Task task) {
+        return TaskResponse.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .reward(task.getReward())
+                .type(task.getType())
+                .collaborative(task.getCollaborative())
+                .build();
     }
 
     private void validateSubmission(TaskType taskType, String text, List<MultipartFile> photos) {

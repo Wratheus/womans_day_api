@@ -1,5 +1,7 @@
 package com.womansday.api.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,8 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Deque;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Component
@@ -23,7 +25,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final long WINDOW_MS = 60_000;
     private static final Pattern SUBMIT_PATH = Pattern.compile("/api/tasks/\\d+/submit");
 
-    private final ConcurrentHashMap<String, Deque<Instant>> requests = new ConcurrentHashMap<>();
+    private final Cache<String, Deque<Instant>> requests = Caffeine.newBuilder()
+            .expireAfterAccess(2, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build();
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -38,11 +43,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String ip = getClientIp(request);
+        String ip = request.getRemoteAddr();
         Instant now = Instant.now();
         Instant windowStart = now.minusMillis(WINDOW_MS);
 
-        Deque<Instant> timestamps = requests.computeIfAbsent(ip, k -> new ConcurrentLinkedDeque<>());
+        Deque<Instant> timestamps = requests.get(ip, k -> new ConcurrentLinkedDeque<>());
 
         while (!timestamps.isEmpty() && timestamps.peekFirst().isBefore(windowStart)) {
             timestamps.pollFirst();
@@ -59,13 +64,5 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         timestamps.addLast(now);
         filterChain.doFilter(request, response);
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            return xff.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 }

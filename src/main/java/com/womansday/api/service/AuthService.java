@@ -3,28 +3,29 @@ package com.womansday.api.service;
 import com.womansday.api.dto.request.LoginRequest;
 import com.womansday.api.dto.request.RegisterRequest;
 import com.womansday.api.dto.response.AuthResponse;
+import com.womansday.api.entity.RevokedToken;
 import com.womansday.api.entity.User;
 import com.womansday.api.exception.BusinessLogicException;
 import com.womansday.api.enums.Role;
+import com.womansday.api.repository.RevokedTokenRepository;
 import com.womansday.api.repository.UserRepository;
 import com.womansday.api.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings("null")
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RevokedTokenRepository revokedTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-
-    private final Set<String> revokedJtis = ConcurrentHashMap.newKeySet();
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByLogin(request.getLogin())) {
@@ -67,7 +68,7 @@ public class AuthService {
         }
 
         String jti = jwtTokenProvider.getJti(refreshToken);
-        if (jti != null && revokedJtis.contains(jti)) {
+        if (jti != null && revokedTokenRepository.existsByJti(jti)) {
             throw new BusinessLogicException("Refresh token has been revoked");
         }
 
@@ -76,19 +77,47 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessLogicException("User not found"));
 
         if (jti != null) {
-            revokedJtis.add(jti);
+            revokeToken(jti, refreshToken);
         }
 
         return buildAuthResponse(user);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BusinessLogicException("Current password is incorrect");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     public void logout(String refreshToken) {
         if (jwtTokenProvider.validateToken(refreshToken)) {
             String jti = jwtTokenProvider.getJti(refreshToken);
             if (jti != null) {
-                revokedJtis.add(jti);
+                revokeToken(jti, refreshToken);
             }
         }
+    }
+
+    private void revokeToken(String jti, String token) {
+        Instant expiresAt = jwtTokenProvider.getExpiration(token).toInstant();
+        RevokedToken revoked = RevokedToken.builder()
+                .jti(jti)
+                .expiresAt(expiresAt)
+                .build();
+        revokedTokenRepository.save(revoked);
+    }
+
+    @Scheduled(fixedRate = 3600000) // every hour
+    @Transactional
+    public void cleanupExpiredTokens() {
+        revokedTokenRepository.deleteExpired(Instant.now());
     }
 
     private AuthResponse buildAuthResponse(User user) {

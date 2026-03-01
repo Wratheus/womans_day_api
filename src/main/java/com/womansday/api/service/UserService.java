@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
+    private static final long MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+
     private final UserRepository userRepository;
     private final TaskSubmissionRepository submissionRepository;
     private final PhotoStorageService photoStorageService;
@@ -92,6 +94,10 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        if (avatar.getSize() > MAX_AVATAR_SIZE_BYTES) {
+            throw new BusinessLogicException("Avatar must not exceed 2MB");
+        }
+
         String contentType = avatar.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new BusinessLogicException("Only image files are allowed");
@@ -111,6 +117,26 @@ public class UserService {
         } catch (IOException e) {
             throw new BusinessLogicException("Avatar upload failed");
         }
+    }
+
+    @Transactional
+    @SuppressWarnings("null")
+    public void deleteAvatar(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getAvatarPath() == null) {
+            throw new BusinessLogicException("No avatar to delete");
+        }
+
+        try {
+            photoStorageService.delete(user.getAvatarPath());
+        } catch (IOException ignored) {
+        }
+
+        user.setAvatarPath(null);
+        user.setAvatarContentType(null);
+        userRepository.save(user);
     }
 
     @Transactional(readOnly = true)

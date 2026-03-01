@@ -1,11 +1,11 @@
 package com.womansday.api.controller;
 
 import com.womansday.api.dto.request.UpdateProfileRequest;
-import com.womansday.api.dto.response.MeResponse;
-import com.womansday.api.dto.response.UserResponse;
+import com.womansday.api.dto.response.*;
 import com.womansday.api.entity.User;
 import com.womansday.api.enums.Role;
 import com.womansday.api.service.PhotoStorageService;
+import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final TaskService taskService;
     private final PhotoStorageService photoStorageService;
 
     @GetMapping("/me")
@@ -52,6 +53,13 @@ public class UserController {
         return ResponseEntity.ok(Map.of("avatarUrl", url));
     }
 
+    @DeleteMapping("/me/avatar")
+    public ResponseEntity<Void> deleteAvatar(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        userService.deleteAvatar(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/avatar")
     public ResponseEntity<byte[]> getAvatar(@PathVariable Long id) {
         User user = userService.getUserEntity(id);
@@ -75,6 +83,23 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> getAllUsers(Authentication authentication) {
         Role callerRole = extractRole(authentication);
         return ResponseEntity.ok(userService.getAllUsers(callerRole));
+    }
+
+    @GetMapping("/me/submissions")
+    public ResponseEntity<List<SubmissionResponse>> getMySubmissions(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(taskService.getMySubmissions(userId));
+    }
+
+    @GetMapping("/me/invitations")
+    public ResponseEntity<List<SubmissionResponse>> getMyInvitations(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(taskService.getMyInvitations(userId));
+    }
+
+    @GetMapping("/leaderboard")
+    public ResponseEntity<List<LeaderboardEntry>> getLeaderboard() {
+        return ResponseEntity.ok(taskService.getLeaderboard());
     }
 
     private Role extractRole(Authentication authentication) {

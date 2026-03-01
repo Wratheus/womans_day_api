@@ -50,10 +50,19 @@ public class PhotoStorageService {
     }
 
     public byte[] load(String filePath) throws IOException {
+        validatePath(filePath);
         return Files.readAllBytes(Paths.get(filePath));
     }
 
     public void delete(String filePath) throws IOException {
+        validatePath(filePath);
         Files.deleteIfExists(Paths.get(filePath));
+    }
+
+    private void validatePath(String filePath) {
+        Path normalized = Paths.get(filePath).normalize();
+        if (!normalized.startsWith(Paths.get(storageDir).normalize())) {
+            throw new SecurityException("Access denied: path outside storage directory");
+        }
     }
 }
