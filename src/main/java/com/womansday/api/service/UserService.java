@@ -14,10 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -37,8 +42,15 @@ public class UserService {
             users = userRepository.findByRoleNot(Role.ADMIN);
         }
 
+        Map<Long, Long> earnedMap = new HashMap<>();
+        if (callerRole == Role.ADMIN) {
+            for (Object[] row : submissionRepository.sumApprovedRewardsGroupedByUser()) {
+                earnedMap.put((Long) row[0], (Long) row[1]);
+            }
+        }
+
         return users.stream()
-                .map(u -> toUserResponse(u, callerRole))
+                .map(u -> toUserResponse(u, callerRole, earnedMap))
                 .collect(Collectors.toList());
     }
 
@@ -146,10 +158,10 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    private UserResponse toUserResponse(User user, Role callerRole) {
+    private UserResponse toUserResponse(User user, Role callerRole, Map<Long, Long> earnedMap) {
         Long earned = null;
         if (callerRole == Role.ADMIN) {
-            earned = submissionRepository.sumApprovedRewardsByUserId(user.getId());
+            earned = earnedMap.getOrDefault(user.getId(), 0L);
         }
 
         return UserResponse.builder()

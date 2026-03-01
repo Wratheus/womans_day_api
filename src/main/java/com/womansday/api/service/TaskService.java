@@ -11,6 +11,7 @@ import com.womansday.api.exception.BusinessLogicException;
 import com.womansday.api.exception.ResourceNotFoundException;
 import com.womansday.api.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -118,6 +120,8 @@ public class TaskService {
                 .build();
 
         submission = submissionRepository.save(submission);
+        log.info("Submission created: id={}, taskId={}, submitterId={}, status={}",
+                submission.getId(), taskId, submitterId, initialStatus);
 
         if (photos != null && !photos.isEmpty()) {
             for (MultipartFile photo : photos) {
@@ -219,6 +223,7 @@ public class TaskService {
         }
 
         submissionRepository.save(submission);
+        log.info("Submission reviewed: id={}, result={}", submissionId, approved ? "APPROVED" : "REJECTED");
 
         return toAdminSubmissionResponse(submission);
     }

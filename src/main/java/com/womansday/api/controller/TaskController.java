@@ -4,14 +4,15 @@ import com.womansday.api.dto.response.BudgetResponse;
 import com.womansday.api.dto.response.SubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.entity.SubmissionPhoto;
+import com.womansday.api.security.SecurityUtils;
 import com.womansday.api.service.PhotoStorageService;
 import com.womansday.api.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,17 +29,17 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAllTasks(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(taskService.getAllTasks(userId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponse> getTask(@PathVariable Long id, Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(taskService.getTask(id, userId));
     }
 
-    @PostMapping(value = "/{id}/submit", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{id}/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionResponse> submitTask(
             @PathVariable Long id,
             @RequestParam(required = false) String text,
@@ -46,7 +47,7 @@ public class TaskController {
             @RequestParam(required = false) List<Long> participantIds,
             Authentication authentication) {
 
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(taskService.submitTask(id, userId, text, photos, participantIds));
     }
@@ -56,7 +57,7 @@ public class TaskController {
             @PathVariable Long submissionId,
             @RequestParam boolean accept,
             Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         if (accept) {
             taskService.acceptInvitation(submissionId, userId);
         } else {
@@ -69,7 +70,7 @@ public class TaskController {
     public ResponseEntity<Void> cancelSubmission(
             @PathVariable Long submissionId,
             Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         taskService.cancelSubmission(submissionId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -81,8 +82,8 @@ public class TaskController {
 
     @GetMapping("/photos/{photoId}")
     public ResponseEntity<byte[]> getPhoto(@PathVariable Long photoId, Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
-        String role = extractRoleString(authentication);
+        Long userId = SecurityUtils.extractUserId(authentication);
+        String role = SecurityUtils.extractRoleString(authentication);
 
         SubmissionPhoto photo = taskService.getPhoto(photoId, userId, role);
 
@@ -96,14 +97,5 @@ public class TaskController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
-    }
-
-    private String extractRoleString(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(a -> a.startsWith("ROLE_"))
-                .map(a -> a.substring(5))
-                .findFirst()
-                .orElse("USER");
     }
 }

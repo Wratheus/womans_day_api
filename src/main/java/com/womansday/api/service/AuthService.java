@@ -11,6 +11,7 @@ import com.womansday.api.repository.RevokedTokenRepository;
 import com.womansday.api.repository.UserRepository;
 import com.womansday.api.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -43,18 +45,24 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
+        log.info("User registered: login={}", user.getLogin());
 
         return buildAuthResponse(user);
     }
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByLogin(request.getLogin())
-                .orElseThrow(() -> new BusinessLogicException("Invalid login or password"));
+                .orElseThrow(() -> {
+                    log.warn("Login attempt with unknown login: {}", request.getLogin());
+                    return new BusinessLogicException("Invalid login or password");
+                });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            log.warn("Failed login attempt for user: {}", request.getLogin());
             throw new BusinessLogicException("Invalid login or password");
         }
 
+        log.info("User logged in: login={}", user.getLogin());
         return buildAuthResponse(user);
     }
 
@@ -97,6 +105,7 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        log.info("Password changed for userId={}", userId);
     }
 
     public void logout(String refreshToken) {
@@ -121,7 +130,10 @@ public class AuthService {
     @Scheduled(fixedRate = 3600000) // every hour
     @Transactional
     public void cleanupExpiredTokens() {
-        revokedTokenRepository.deleteExpired(Instant.now());
+        int deleted = revokedTokenRepository.deleteExpired(Instant.now());
+        if (deleted > 0) {
+            log.info("Cleaned up {} expired revoked tokens", deleted);
+        }
     }
 
     private AuthResponse buildAuthResponse(User user) {

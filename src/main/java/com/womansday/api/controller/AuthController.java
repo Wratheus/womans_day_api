@@ -5,6 +5,7 @@ import com.womansday.api.dto.request.LoginRequest;
 import com.womansday.api.dto.request.RefreshRequest;
 import com.womansday.api.dto.request.RegisterRequest;
 import com.womansday.api.dto.response.AuthResponse;
+import com.womansday.api.security.SecurityUtils;
 import com.womansday.api.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class AuthController {
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         authService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok().build();
     }

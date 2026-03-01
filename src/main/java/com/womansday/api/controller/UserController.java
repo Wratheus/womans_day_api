@@ -3,7 +3,7 @@ package com.womansday.api.controller;
 import com.womansday.api.dto.request.UpdateProfileRequest;
 import com.womansday.api.dto.response.*;
 import com.womansday.api.entity.User;
-import com.womansday.api.enums.Role;
+import com.womansday.api.security.SecurityUtils;
 import com.womansday.api.service.PhotoStorageService;
 import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
@@ -13,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +31,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<MeResponse> getMe(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(userService.getMe(userId));
     }
 
@@ -40,7 +39,7 @@ public class UserController {
     public ResponseEntity<MeResponse> updateProfile(
             @Valid @RequestBody UpdateProfileRequest request,
             Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(userService.updateProfile(userId, request));
     }
 
@@ -48,14 +47,14 @@ public class UserController {
     public ResponseEntity<Map<String, String>> uploadAvatar(
             @RequestPart MultipartFile avatar,
             Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         String url = userService.uploadAvatar(userId, avatar);
         return ResponseEntity.ok(Map.of("avatarUrl", url));
     }
 
     @DeleteMapping("/me/avatar")
     public ResponseEntity<Void> deleteAvatar(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         userService.deleteAvatar(userId);
         return ResponseEntity.noContent().build();
     }
@@ -81,37 +80,23 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers(Authentication authentication) {
-        Role callerRole = extractRole(authentication);
-        return ResponseEntity.ok(userService.getAllUsers(callerRole));
+        return ResponseEntity.ok(userService.getAllUsers(SecurityUtils.extractRole(authentication)));
     }
 
     @GetMapping("/me/submissions")
     public ResponseEntity<List<SubmissionResponse>> getMySubmissions(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(taskService.getMySubmissions(userId));
     }
 
     @GetMapping("/me/invitations")
     public ResponseEntity<List<SubmissionResponse>> getMyInvitations(Authentication authentication) {
-        Long userId = (Long) authentication.getPrincipal();
+        Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(taskService.getMyInvitations(userId));
     }
 
     @GetMapping("/leaderboard")
     public ResponseEntity<List<LeaderboardEntry>> getLeaderboard() {
         return ResponseEntity.ok(taskService.getLeaderboard());
-    }
-
-    private Role extractRole(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(a -> a.startsWith("ROLE_"))
-                .map(a -> a.substring(5))
-                .findFirst()
-                .map(r -> {
-                    try { return Role.valueOf(r); }
-                    catch (IllegalArgumentException e) { return Role.USER; }
-                })
-                .orElse(Role.USER);
     }
 }

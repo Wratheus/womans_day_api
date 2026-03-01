@@ -42,6 +42,10 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
             "WHERE p.id = :userId AND s.status = 'APPROVED'")
     long sumApprovedRewardsByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT p.id, COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p " +
+            "WHERE s.status = 'APPROVED' GROUP BY p.id")
+    List<Object[]> sumApprovedRewardsGroupedByUser();
+
     @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId ORDER BY s.createdAtEpoch DESC")
     List<TaskSubmission> findByParticipantId(@Param("userId") Long userId);
 
