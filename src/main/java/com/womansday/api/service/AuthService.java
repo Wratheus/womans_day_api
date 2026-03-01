@@ -27,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @SuppressWarnings("null")
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByLogin(request.getLogin())) {
             throw new BusinessLogicException("Login is already taken");
@@ -73,6 +74,7 @@ public class AuthService {
         }
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException("User not found"));
 
@@ -85,6 +87,7 @@ public class AuthService {
 
     @Transactional
     public void changePassword(Long userId, String currentPassword, String newPassword) {
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException("User not found"));
 
@@ -105,6 +108,7 @@ public class AuthService {
         }
     }
 
+    @SuppressWarnings("null")
     private void revokeToken(String jti, String token) {
         Instant expiresAt = jwtTokenProvider.getExpiration(token).toInstant();
         RevokedToken revoked = RevokedToken.builder()
