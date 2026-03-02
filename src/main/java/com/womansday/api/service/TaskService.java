@@ -51,7 +51,7 @@ public class TaskService {
         return toTaskResponse(task, userId);
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.DEFAULT)
     public SubmissionResponse submitTask(Long taskId, Long submitterId, String text,
             List<MultipartFile> photos, List<Long> participantIds) {
         Task task = taskRepository.findById(taskId)

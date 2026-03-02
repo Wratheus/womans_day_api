@@ -71,7 +71,6 @@ public class UserController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, user.getAvatarContentType())
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                    .header("X-Content-Type-Options", "nosniff")
                     .body(data);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();

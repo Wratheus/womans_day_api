@@ -91,8 +91,7 @@ public class TaskController {
             byte[] data = photoStorageService.loadByKey(photo.getFilePath());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, photo.getContentType())
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                    .header("X-Content-Type-Options", "nosniff")
+                    // .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                     .body(data);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
