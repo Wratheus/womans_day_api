@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 public class TaskService {
 
     private static final int MAX_PHOTOS_PER_SUBMISSION = 5;
-    private static final long MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MAX_TEXT_LENGTH = 5000;
 
     private final TaskRepository taskRepository;
@@ -129,9 +128,6 @@ public class TaskService {
                 String contentType = photo.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
                     throw new BusinessLogicException("Only image files are allowed");
-                }
-                if (photo.getSize() > MAX_PHOTO_SIZE_BYTES) {
-                    throw new BusinessLogicException("Photo must not exceed 10MB");
                 }
                 try {
                     String filePath = photoStorageService.storeSubmissionPhoto(
