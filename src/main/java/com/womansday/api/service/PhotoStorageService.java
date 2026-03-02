@@ -18,51 +18,73 @@ public class PhotoStorageService {
             "image/jpeg", "jpg",
             "image/png", "png",
             "image/webp", "webp",
-            "image/gif", "gif"
-    );
+            "image/gif", "gif");
+
+    private Path storageRoot;
 
     @Value("${app.photos.storage-dir}")
     private String storageDir;
 
     @PostConstruct
     public void init() throws IOException {
-        Files.createDirectories(Paths.get(storageDir));
+        storageRoot = Paths.get(storageDir).toAbsolutePath().normalize();
+        Files.createDirectories(storageRoot);
     }
 
-    public String store(Long submissionId, String contentType, byte[] data) throws IOException {
-        String ext = MIME_TO_EXT.getOrDefault(contentType, "jpg");
+    // Возвращаем НЕ абсолютный путь, а ключ
+    public String storeSubmissionPhoto(Long submissionId, String contentType, byte[] data) throws IOException {
+        String ext = requireAllowedExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
-        Path dir = Paths.get(storageDir, String.valueOf(submissionId));
-        Files.createDirectories(dir);
-        Path filePath = dir.resolve(filename);
-        Files.write(filePath, data);
-        return filePath.toString();
+        String key = Paths.get("submissions", String.valueOf(submissionId), filename).toString();
+        writeByKey(key, data);
+        return key;
     }
 
     public String storeAvatar(Long userId, String contentType, byte[] data) throws IOException {
-        String ext = MIME_TO_EXT.getOrDefault(contentType, "jpg");
+        String ext = requireAllowedExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
-        Path dir = Paths.get(storageDir, "avatars", String.valueOf(userId));
-        Files.createDirectories(dir);
-        Path filePath = dir.resolve(filename);
-        Files.write(filePath, data);
-        return filePath.toString();
+        String key = Paths.get("avatars", String.valueOf(userId), filename).toString();
+        writeByKey(key, data);
+        return key;
     }
 
-    public byte[] load(String filePath) throws IOException {
-        validatePath(filePath);
-        return Files.readAllBytes(Paths.get(filePath));
+    public byte[] loadByKey(String key) throws IOException {
+        Path path = resolveAndValidateKey(key);
+        return Files.readAllBytes(path);
     }
 
-    public void delete(String filePath) throws IOException {
-        validatePath(filePath);
-        Files.deleteIfExists(Paths.get(filePath));
+    public void deleteByKey(String key) throws IOException {
+        Path path = resolveAndValidateKey(key);
+        Files.deleteIfExists(path);
     }
 
-    private void validatePath(String filePath) {
-        Path normalized = Paths.get(filePath).normalize();
-        if (!normalized.startsWith(Paths.get(storageDir).normalize())) {
+    private void writeByKey(String key, byte[] data) throws IOException {
+        Path path = resolveAndValidateKey(key);
+        Files.createDirectories(path.getParent());
+        Files.write(path, data,
+                java.nio.file.StandardOpenOption.CREATE_NEW,
+                java.nio.file.StandardOpenOption.WRITE);
+    }
+
+    private Path resolveAndValidateKey(String key) {
+        // запрещаем абсолютные пути сразу
+        Path relative = Paths.get(key);
+        if (relative.isAbsolute()) {
+            throw new SecurityException("Absolute paths are not allowed");
+        }
+
+        Path resolved = storageRoot.resolve(relative).normalize();
+        if (!resolved.startsWith(storageRoot)) {
             throw new SecurityException("Access denied: path outside storage directory");
         }
+        return resolved;
+    }
+
+    private String requireAllowedExt(String contentType) {
+        String ext = MIME_TO_EXT.get(contentType);
+        if (ext == null) {
+            throw new IllegalArgumentException("Unsupported content type: " + contentType);
+        }
+        return ext;
     }
 }

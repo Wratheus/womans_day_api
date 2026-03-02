@@ -67,7 +67,7 @@ public class UserController {
         }
 
         try {
-            byte[] data = photoStorageService.load(user.getAvatarPath());
+            byte[] data = photoStorageService.loadByKey(user.getAvatarPath());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, user.getAvatarContentType())
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")

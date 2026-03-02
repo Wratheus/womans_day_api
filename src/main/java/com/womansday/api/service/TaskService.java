@@ -134,7 +134,7 @@ public class TaskService {
                     throw new BusinessLogicException("Photo must not exceed 10MB");
                 }
                 try {
-                    String filePath = photoStorageService.store(
+                    String filePath = photoStorageService.storeSubmissionPhoto(
                             submission.getId(), contentType, photo.getBytes());
                     SubmissionPhoto photoEntity = SubmissionPhoto.builder()
                             .submission(submission)
@@ -370,7 +370,7 @@ public class TaskService {
                     .stream()
                     .mapToLong(s -> payoutForUser(s, user.getId()))
                     .sum();
-                    
+
             entries.add(LeaderboardEntry.builder()
                     .userId(user.getId())
                     .firstName(user.getFirstName())
@@ -396,7 +396,7 @@ public class TaskService {
     private void deleteSubmissionPhotos(TaskSubmission submission) {
         for (SubmissionPhoto photo : submission.getPhotos()) {
             try {
-                photoStorageService.delete(photo.getFilePath());
+                photoStorageService.deleteByKey(photo.getFilePath());
             } catch (IOException ignored) {
             }
         }

@@ -88,7 +88,7 @@ public class TaskController {
         SubmissionPhoto photo = taskService.getPhoto(photoId, userId, role);
 
         try {
-            byte[] data = photoStorageService.load(photo.getFilePath());
+            byte[] data = photoStorageService.loadByKey(photo.getFilePath());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, photo.getContentType())
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")

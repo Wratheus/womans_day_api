@@ -117,7 +117,7 @@ public class UserService {
 
         try {
             if (user.getAvatarPath() != null) {
-                photoStorageService.delete(user.getAvatarPath());
+                photoStorageService.deleteByKey(user.getAvatarPath());
             }
 
             String path = photoStorageService.storeAvatar(userId, contentType, avatar.getBytes());
@@ -142,7 +142,7 @@ public class UserService {
         }
 
         try {
-            photoStorageService.delete(user.getAvatarPath());
+            photoStorageService.deleteByKey(user.getAvatarPath());
         } catch (IOException ignored) {
         }
 
