@@ -53,7 +53,7 @@ public class TaskService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public SubmissionResponse submitTask(Long taskId, Long submitterId, String text,
-                                          List<MultipartFile> photos, List<Long> participantIds) {
+            List<MultipartFile> photos, List<Long> participantIds) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
@@ -77,7 +77,8 @@ public class TaskService {
                 throw new BusinessLogicException("This task does not support co-participation");
             }
             for (Long pid : participantIds) {
-                if (pid.equals(submitterId)) continue;
+                if (pid.equals(submitterId))
+                    continue;
                 User participant = userRepository.findById(pid)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Participant with ID " + pid + " not found"));
@@ -291,11 +292,16 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
-        if (request.getTitle() != null) task.setTitle(request.getTitle());
-        if (request.getDescription() != null) task.setDescription(request.getDescription());
-        if (request.getReward() != null) task.setReward(request.getReward());
-        if (request.getType() != null) task.setType(request.getType());
-        if (request.getCollaborative() != null) task.setCollaborative(request.getCollaborative());
+        if (request.getTitle() != null)
+            task.setTitle(request.getTitle());
+        if (request.getDescription() != null)
+            task.setDescription(request.getDescription());
+        if (request.getReward() != null)
+            task.setReward(request.getReward());
+        if (request.getType() != null)
+            task.setType(request.getType());
+        if (request.getCollaborative() != null)
+            task.setCollaborative(request.getCollaborative());
 
         taskRepository.save(task);
         return toTaskResponseAdmin(task);
@@ -359,7 +365,12 @@ public class TaskService {
         List<LeaderboardEntry> entries = new ArrayList<>();
 
         for (User user : users) {
-            long earned = submissionRepository.sumApprovedRewardsByUserId(user.getId());
+            long earned = submissionRepository
+                    .findByParticipantAndStatusWithTaskAndParticipants(user.getId(), SubmissionStatus.APPROVED)
+                    .stream()
+                    .mapToLong(s -> payoutForUser(s, user.getId()))
+                    .sum();
+                    
             entries.add(LeaderboardEntry.builder()
                     .userId(user.getId())
                     .firstName(user.getFirstName())
@@ -408,21 +419,24 @@ public class TaskService {
 
         switch (taskType) {
             case TEXT -> {
-                if (!hasText) throw new BusinessLogicException("This task requires a text answer");
+                if (!hasText)
+                    throw new BusinessLogicException("This task requires a text answer");
             }
             case PHOTO -> {
-                if (!hasPhotos) throw new BusinessLogicException("This task requires a photo");
+                if (!hasPhotos)
+                    throw new BusinessLogicException("This task requires a photo");
             }
             case TEXT_AND_PHOTO -> {
-                if (!hasText) throw new BusinessLogicException("This task requires a text answer");
-                if (!hasPhotos) throw new BusinessLogicException("This task requires a photo");
+                if (!hasText)
+                    throw new BusinessLogicException("This task requires a text answer");
+                if (!hasPhotos)
+                    throw new BusinessLogicException("This task requires a photo");
             }
         }
     }
 
     private TaskResponse toTaskResponse(Task task, Long userId) {
-        List<TaskSubmission> userSubmissions =
-                submissionRepository.findByParticipantAndTaskId(userId, task.getId());
+        List<TaskSubmission> userSubmissions = submissionRepository.findByParticipantAndTaskId(userId, task.getId());
 
         String myStatus = SubmissionStatus.NOT_STARTED.value();
         SubmissionResponse mySubmission = null;
@@ -432,8 +446,8 @@ public class TaskService {
             myStatus = latest.getStatus().value();
             mySubmission = toSubmissionResponse(latest);
         } else {
-            List<TaskSubmission> pendingInvitations =
-                    submissionRepository.findByPendingParticipantAndTaskId(userId, task.getId());
+            List<TaskSubmission> pendingInvitations = submissionRepository.findByPendingParticipantAndTaskId(userId,
+                    task.getId());
             if (!pendingInvitations.isEmpty()) {
                 TaskSubmission invitation = pendingInvitations.get(0);
                 myStatus = SubmissionStatus.INVITED.value();
@@ -528,5 +542,18 @@ public class TaskService {
                         .map(SubmissionPhoto::getId)
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    private long payoutForUser(TaskSubmission s, Long userId) {
+        long reward = s.getTask().getReward();
+        int n = (s.getParticipants() == null) ? 0 : s.getParticipants().size();
+        if (n <= 0)
+            return 0;
+
+        long base = reward / n;
+        long remainder = reward % n;
+
+        boolean isSubmitter = s.getSubmitter() != null && userId.equals(s.getSubmitter().getId());
+        return isSubmitter ? (base + remainder) : base; // остаток отдаём submitter’у
     }
 }

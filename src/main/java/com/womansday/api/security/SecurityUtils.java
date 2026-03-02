@@ -32,6 +32,6 @@ public final class SecurityUtils {
                 .filter(a -> a.startsWith("ROLE_"))
                 .map(a -> a.substring(5))
                 .findFirst()
-                .orElse("USER");
+                .orElse(Role.USER.name());
     }
 }
