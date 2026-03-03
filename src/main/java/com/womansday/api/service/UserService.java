@@ -55,7 +55,7 @@ public class UserService {
     @SuppressWarnings("null")
     public MeResponse getMe(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         long balance = submissionRepository.sumApprovedRewardsByUserId(userId);
 
@@ -72,7 +72,7 @@ public class UserService {
     @SuppressWarnings("null")
     public MeResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
@@ -101,12 +101,12 @@ public class UserService {
     @SuppressWarnings("null")
     public String uploadAvatar(Long userId, MultipartFile avatar) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
 
         String contentType = avatar.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new BusinessLogicException("Only image files are allowed");
+            throw new BusinessLogicException("Разрешены только изображения");
         }
 
         try {
@@ -121,7 +121,7 @@ public class UserService {
 
             return "/api/users/" + userId + "/avatar";
         } catch (IOException e) {
-            throw new BusinessLogicException("Avatar upload failed");
+            throw new BusinessLogicException("Ошибка загрузки аватара");
         }
     }
 
@@ -129,10 +129,10 @@ public class UserService {
     @SuppressWarnings("null")
     public void deleteAvatar(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         if (user.getAvatarPath() == null) {
-            throw new BusinessLogicException("No avatar to delete");
+            throw new BusinessLogicException("Аватар отсутствует");
         }
 
         try {
@@ -149,7 +149,7 @@ public class UserService {
     @SuppressWarnings("null")
     public User getUserEntity(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
     }
 
     private UserResponse toUserResponse(User user, Role callerRole, Map<Long, Long> earnedMap) {
@@ -168,4 +168,5 @@ public class UserService {
                 .earned(earned)
                 .build();
     }
+
 }

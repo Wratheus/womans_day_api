@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class ReviewRequest {
 
-    @NotNull(message = "Approved status is required")
+    @NotNull(message = "Статус одобрения обязателен")
     private Boolean approved;
 }

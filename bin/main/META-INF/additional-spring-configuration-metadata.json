@@ -21,10 +21,10 @@
       "description": "List of allowed CORS origins"
     },
     {
-      "name": "app.photos.storage-dir",
+      "name": "app.media.storage-dir",
       "type": "java.lang.String",
-      "description": "Photos dir",
-      "defaultValue": "./photos"
+      "description": "Media storage directory",
+      "defaultValue": "./media"
     },
     {
       "name": "admin.login",

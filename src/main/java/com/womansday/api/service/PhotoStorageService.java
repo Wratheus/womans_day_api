@@ -14,15 +14,29 @@ import java.util.UUID;
 @Service
 public class PhotoStorageService {
 
-    private static final Map<String, String> MIME_TO_EXT = Map.of(
+    private static final Map<String, String> IMAGE_MIME_TO_EXT = Map.of(
             "image/jpeg", "jpg",
             "image/png", "png",
             "image/webp", "webp",
             "image/gif", "gif");
 
+    private static final Map<String, String> MIME_TO_EXT = Map.ofEntries(
+            Map.entry("image/jpeg", "jpg"),
+            Map.entry("image/png", "png"),
+            Map.entry("image/webp", "webp"),
+            Map.entry("image/gif", "gif"),
+            Map.entry("video/mp4", "mp4"),
+            Map.entry("video/quicktime", "mov"),
+            Map.entry("video/x-msvideo", "avi"),
+            Map.entry("video/webm", "webm"),
+            Map.entry("audio/mpeg", "mp3"),
+            Map.entry("audio/ogg", "ogg"),
+            Map.entry("audio/wav", "wav"),
+            Map.entry("application/pdf", "pdf"));
+
     private Path storageRoot;
 
-    @Value("${app.photos.storage-dir}")
+    @Value("${app.media.storage-dir}")
     private String storageDir;
 
     @PostConstruct
@@ -31,9 +45,8 @@ public class PhotoStorageService {
         Files.createDirectories(storageRoot);
     }
 
-    // Возвращаем НЕ абсолютный путь, а ключ
-    public String storeSubmissionPhoto(Long submissionId, String contentType, byte[] data) throws IOException {
-        String ext = requireAllowedExt(contentType);
+    public String storeSubmissionFile(Long submissionId, String contentType, byte[] data) throws IOException {
+        String ext = resolveExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
         String key = Paths.get("submissions", String.valueOf(submissionId), filename).toString();
         writeByKey(key, data);
@@ -41,7 +54,7 @@ public class PhotoStorageService {
     }
 
     public String storeAvatar(Long userId, String contentType, byte[] data) throws IOException {
-        String ext = requireAllowedExt(contentType);
+        String ext = requireImageExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
         String key = Paths.get("avatars", String.valueOf(userId), filename).toString();
         writeByKey(key, data);
@@ -67,7 +80,6 @@ public class PhotoStorageService {
     }
 
     private Path resolveAndValidateKey(String key) {
-        // запрещаем абсолютные пути сразу
         Path relative = Paths.get(key);
         if (relative.isAbsolute()) {
             throw new SecurityException("Absolute paths are not allowed");
@@ -80,8 +92,18 @@ public class PhotoStorageService {
         return resolved;
     }
 
-    private String requireAllowedExt(String contentType) {
-        String ext = MIME_TO_EXT.get(contentType);
+    private String resolveExt(String contentType) {
+        String known = MIME_TO_EXT.get(contentType);
+        if (known != null) return known;
+        if (contentType != null && contentType.contains("/")) {
+            String sub = contentType.split("/")[1].split(";")[0].trim().toLowerCase();
+            if (!sub.isBlank()) return sub;
+        }
+        return "bin";
+    }
+
+    private String requireImageExt(String contentType) {
+        String ext = IMAGE_MIME_TO_EXT.get(contentType);
         if (ext == null) {
             throw new IllegalArgumentException("Unsupported content type: " + contentType);
         }

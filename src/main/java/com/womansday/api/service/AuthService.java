@@ -32,7 +32,7 @@ public class AuthService {
     @SuppressWarnings("null")
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByLogin(request.getLogin())) {
-            throw new BusinessLogicException("Login is already taken");
+            throw new BusinessLogicException("Этот логин уже занят");
         }
 
         User user = User.builder()
@@ -54,12 +54,12 @@ public class AuthService {
         User user = userRepository.findByLogin(request.getLogin())
                 .orElseThrow(() -> {
                     log.warn("Login attempt with unknown login: {}", request.getLogin());
-                    return new BusinessLogicException("Invalid login or password");
+                    return new BusinessLogicException("Неверный логин или пароль");
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             log.warn("Failed login attempt for user: {}", request.getLogin());
-            throw new BusinessLogicException("Invalid login or password");
+            throw new BusinessLogicException("Неверный логин или пароль");
         }
 
         log.info("User logged in: login={}", user.getLogin());
@@ -68,23 +68,23 @@ public class AuthService {
 
     public AuthResponse refresh(String refreshToken) {
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new BusinessLogicException("Invalid refresh token");
+            throw new BusinessLogicException("Недействительный токен обновления");
         }
 
         String tokenType = jwtTokenProvider.getTokenType(refreshToken);
         if (!"refresh".equals(tokenType)) {
-            throw new BusinessLogicException("Invalid token type");
+            throw new BusinessLogicException("Неверный тип токена");
         }
 
         String jti = jwtTokenProvider.getJti(refreshToken);
         if (jti != null && revokedTokenRepository.existsByJti(jti)) {
-            throw new BusinessLogicException("Refresh token has been revoked");
+            throw new BusinessLogicException("Токен обновления был отозван");
         }
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
         @SuppressWarnings("null")
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessLogicException("User not found"));
+                .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
 
         if (jti != null) {
             revokeToken(jti, refreshToken);
@@ -97,10 +97,10 @@ public class AuthService {
     public void changePassword(Long userId, String currentPassword, String newPassword) {
         @SuppressWarnings("null")
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessLogicException("User not found"));
+                .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
 
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new BusinessLogicException("Current password is incorrect");
+            throw new BusinessLogicException("Текущий пароль неверен");
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));

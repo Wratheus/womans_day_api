@@ -66,4 +66,14 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
         List<TaskSubmission> findByParticipantAndStatusWithTaskAndParticipants(
                         @Param("userId") Long userId,
                         @Param("status") SubmissionStatus status);
+
+        @Query("""
+                            select distinct s
+                            from TaskSubmission s
+                            join fetch s.task t
+                            join fetch s.participants p
+                            join fetch s.submitter
+                            where s.status = 'APPROVED'
+                        """)
+        List<TaskSubmission> findAllApprovedWithParticipants();
 }

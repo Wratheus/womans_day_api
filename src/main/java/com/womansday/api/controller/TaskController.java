@@ -43,13 +43,13 @@ public class TaskController {
     public ResponseEntity<SubmissionResponse> submitTask(
             @PathVariable Long id,
             @RequestParam(required = false) String text,
-            @RequestPart(required = false) List<MultipartFile> photos,
+            @RequestPart(required = false) List<MultipartFile> files,
             @RequestParam(required = false) List<Long> participantIds,
             Authentication authentication) {
 
         Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(taskService.submitTask(id, userId, text, photos, participantIds));
+                .body(taskService.submitTask(id, userId, text, files, participantIds));
     }
 
     @PostMapping("/submissions/{submissionId}/respond")
@@ -80,18 +80,17 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getBudget());
     }
 
-    @GetMapping("/photos/{photoId}")
-    public ResponseEntity<byte[]> getPhoto(@PathVariable Long photoId, Authentication authentication) {
+    @GetMapping("/files/{fileId}")
+    public ResponseEntity<byte[]> getFile(@PathVariable Long fileId, Authentication authentication) {
         Long userId = SecurityUtils.extractUserId(authentication);
         String role = SecurityUtils.extractRoleString(authentication);
 
-        SubmissionPhoto photo = taskService.getPhoto(photoId, userId, role);
+        SubmissionPhoto file = taskService.getPhoto(fileId, userId, role);
 
         try {
-            byte[] data = photoStorageService.loadByKey(photo.getFilePath());
+            byte[] data = photoStorageService.loadByKey(file.getFilePath());
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, photo.getContentType())
-                    // .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                    .header(HttpHeaders.CONTENT_TYPE, file.getContentType())
                     .body(data);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();

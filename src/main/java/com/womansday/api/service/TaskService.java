@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("null")
 public class TaskService {
 
-    private static final int MAX_PHOTOS_PER_SUBMISSION = 5;
+    private static final int MAX_FILES_PER_SUBMISSION = 5;
     private static final int MAX_TEXT_LENGTH = 5000;
 
     private final TaskRepository taskRepository;
@@ -46,24 +46,24 @@ public class TaskService {
     @Transactional(readOnly = true)
     public TaskResponse getTask(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
         return toTaskResponse(task, userId);
     }
 
     @Transactional(isolation = Isolation.DEFAULT)
     public SubmissionResponse submitTask(Long taskId, Long submitterId, String text,
-            List<MultipartFile> photos, List<Long> participantIds) {
+            List<MultipartFile> files, List<Long> participantIds) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
 
         User submitter = userRepository.findById(submitterId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         if (text != null && text.length() > MAX_TEXT_LENGTH) {
-            throw new BusinessLogicException("Text must not exceed " + MAX_TEXT_LENGTH + " characters");
+            throw new BusinessLogicException("Текст не должен превышать " + MAX_TEXT_LENGTH + " символов");
         }
-        if (photos != null && photos.size() > MAX_PHOTOS_PER_SUBMISSION) {
-            throw new BusinessLogicException("Maximum " + MAX_PHOTOS_PER_SUBMISSION + " photos per submission");
+        if (files != null && files.size() > MAX_FILES_PER_SUBMISSION) {
+            throw new BusinessLogicException("Максимум " + MAX_FILES_PER_SUBMISSION + " файлов на одно выполнение");
         }
 
         Set<User> participants = new HashSet<>();
@@ -73,16 +73,16 @@ public class TaskService {
 
         if (participantIds != null && !participantIds.isEmpty()) {
             if (!Boolean.TRUE.equals(task.getCollaborative())) {
-                throw new BusinessLogicException("This task does not support co-participation");
+                throw new BusinessLogicException("Это задание не поддерживает совместное выполнение");
             }
             for (Long pid : participantIds) {
                 if (pid.equals(submitterId))
                     continue;
                 User participant = userRepository.findById(pid)
                         .orElseThrow(() -> new ResourceNotFoundException(
-                                "Participant with ID " + pid + " not found"));
+                                "Участник с ID " + pid + " не найден"));
                 if (submitter.getRole() == Role.USER && participant.getRole() == Role.ADMIN) {
-                    throw new BusinessLogicException("Cannot add admin as participant");
+                    throw new BusinessLogicException("Нельзя добавить администратора в качестве участника");
                 }
                 pendingParticipants.add(participant);
             }
@@ -91,20 +91,20 @@ public class TaskService {
         for (User participant : participants) {
             if (submissionRepository.hasActiveSubmission(participant.getId(), taskId)) {
                 throw new BusinessLogicException(
-                        "User " + participant.getLogin() +
-                                " already has an active submission for this task");
+                        "У пользователя " + participant.getLogin() +
+                                " уже есть активное выполнение этого задания");
             }
         }
         for (User pending : pendingParticipants) {
             if (submissionRepository.hasActiveSubmission(pending.getId(), taskId)
                     || submissionRepository.hasPendingInvitation(pending.getId(), taskId)) {
                 throw new BusinessLogicException(
-                        "User " + pending.getLogin() +
-                                " already has an active submission or pending invitation for this task");
+                        "У пользователя " + pending.getLogin() +
+                                " уже есть активное выполнение или ожидающее приглашение для этого задания");
             }
         }
 
-        validateSubmission(task.getType(), text, photos);
+        validateSubmission(task.getType(), text, files);
 
         SubmissionStatus initialStatus = pendingParticipants.isEmpty()
                 ? SubmissionStatus.PENDING
@@ -123,24 +123,24 @@ public class TaskService {
         log.info("Submission created: id={}, taskId={}, submitterId={}, status={}",
                 submission.getId(), taskId, submitterId, initialStatus);
 
-        if (photos != null && !photos.isEmpty()) {
-            for (MultipartFile photo : photos) {
-                String contentType = photo.getContentType();
-                if (contentType == null || !contentType.startsWith("image/")) {
-                    throw new BusinessLogicException("Only image files are allowed");
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                String contentType = file.getContentType();
+                if (contentType == null || contentType.isBlank()) {
+                    contentType = "application/octet-stream";
                 }
                 try {
-                    String filePath = photoStorageService.storeSubmissionPhoto(
-                            submission.getId(), contentType, photo.getBytes());
-                    SubmissionPhoto photoEntity = SubmissionPhoto.builder()
+                    String filePath = photoStorageService.storeSubmissionFile(
+                            submission.getId(), contentType, file.getBytes());
+                    SubmissionPhoto fileEntity = SubmissionPhoto.builder()
                             .submission(submission)
                             .filePath(filePath)
                             .contentType(contentType)
                             .build();
-                    photoRepository.save(photoEntity);
-                    submission.getPhotos().add(photoEntity);
+                    photoRepository.save(fileEntity);
+                    submission.getPhotos().add(fileEntity);
                 } catch (IOException e) {
-                    throw new BusinessLogicException("Photo upload failed");
+                    throw new BusinessLogicException("Ошибка загрузки файла");
                 }
             }
         }
@@ -151,21 +151,21 @@ public class TaskService {
     @Transactional
     public void acceptInvitation(Long submissionId, Long userId) {
         TaskSubmission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
 
         if (submission.getStatus() != SubmissionStatus.WAITING_FOR_PARTICIPANTS) {
-            throw new BusinessLogicException("This submission is not waiting for participants");
+            throw new BusinessLogicException("Это выполнение не ожидает участников");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         if (!submission.getPendingParticipants().contains(user)) {
-            throw new BusinessLogicException("You are not invited to this submission");
+            throw new BusinessLogicException("Вы не приглашены к этому выполнению");
         }
 
         if (submissionRepository.hasActiveSubmission(userId, submission.getTask().getId())) {
-            throw new BusinessLogicException("You already have an active submission for this task");
+            throw new BusinessLogicException("У вас уже есть активное выполнение этого задания");
         }
 
         submission.getPendingParticipants().remove(user);
@@ -181,17 +181,17 @@ public class TaskService {
     @Transactional
     public void declineInvitation(Long submissionId, Long userId) {
         TaskSubmission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
 
         if (submission.getStatus() != SubmissionStatus.WAITING_FOR_PARTICIPANTS) {
-            throw new BusinessLogicException("This submission is not waiting for participants");
+            throw new BusinessLogicException("Это выполнение не ожидает участников");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
         if (!submission.getPendingParticipants().contains(user)) {
-            throw new BusinessLogicException("You are not invited to this submission");
+            throw new BusinessLogicException("Вы не приглашены к этому выполнению");
         }
 
         submission.getPendingParticipants().remove(user);
@@ -206,10 +206,10 @@ public class TaskService {
     @Transactional
     public AdminSubmissionResponse reviewSubmission(Long submissionId, boolean approved) {
         TaskSubmission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
 
         if (submission.getStatus() != SubmissionStatus.PENDING) {
-            throw new BusinessLogicException("This submission has already been reviewed");
+            throw new BusinessLogicException("Это выполнение уже проверено");
         }
 
         submission.setStatus(approved ? SubmissionStatus.APPROVED : SubmissionStatus.REJECTED);
@@ -234,7 +234,7 @@ public class TaskService {
                 SubmissionStatus status = SubmissionStatus.valueOf(statusFilter.toUpperCase());
                 submissions = submissionRepository.findByStatusOrderByCreatedAtEpochAsc(status);
             } catch (IllegalArgumentException e) {
-                throw new BusinessLogicException("Unknown status: " + statusFilter);
+                throw new BusinessLogicException("Неизвестный статус: " + statusFilter);
             }
         } else {
             submissions = submissionRepository.findAllOrderByStatusAndCreatedAtEpoch();
@@ -262,10 +262,10 @@ public class TaskService {
     public SubmissionPhoto getPhoto(Long photoId, Long userId, String role) {
         if (Role.ADMIN.name().equals(role)) {
             return photoRepository.findById(photoId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Photo not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Фото не найдено"));
         }
         return photoRepository.findByIdAndParticipant(photoId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Photo not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Фото не найдено"));
     }
 
     // --- Admin Task CRUD ---
@@ -286,7 +286,7 @@ public class TaskService {
     @Transactional
     public TaskResponse updateTask(Long taskId, UpdateTaskRequest request) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
 
         if (request.getTitle() != null)
             task.setTitle(request.getTitle());
@@ -306,10 +306,10 @@ public class TaskService {
     @Transactional
     public void deleteTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
 
         if (submissionRepository.hasActiveSubmissionsForTask(taskId)) {
-            throw new BusinessLogicException("Cannot delete task with active submissions");
+            throw new BusinessLogicException("Невозможно удалить задание с активными выполнениями");
         }
 
         taskRepository.delete(task);
@@ -320,15 +320,15 @@ public class TaskService {
     @Transactional
     public void cancelSubmission(Long submissionId, Long userId) {
         TaskSubmission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
 
         if (!submission.getSubmitter().getId().equals(userId)) {
-            throw new BusinessLogicException("Only the submitter can cancel a submission");
+            throw new BusinessLogicException("Только автор может отменить выполнение");
         }
 
         if (submission.getStatus() != SubmissionStatus.PENDING
                 && submission.getStatus() != SubmissionStatus.WAITING_FOR_PARTICIPANTS) {
-            throw new BusinessLogicException("This submission cannot be cancelled");
+            throw new BusinessLogicException("Это выполнение нельзя отменить");
         }
 
         submission.setStatus(SubmissionStatus.CANCELLED);
@@ -364,7 +364,7 @@ public class TaskService {
             long earned = submissionRepository
                     .findByParticipantAndStatusWithTaskAndParticipants(user.getId(), SubmissionStatus.APPROVED)
                     .stream()
-                    .mapToLong(s -> payoutForUser(s, user.getId()))
+                    .mapToLong(s -> s.getTask().getReward())
                     .sum();
 
             entries.add(LeaderboardEntry.builder()
@@ -409,24 +409,24 @@ public class TaskService {
                 .build();
     }
 
-    private void validateSubmission(TaskType taskType, String text, List<MultipartFile> photos) {
+    private void validateSubmission(TaskType taskType, String text, List<MultipartFile> files) {
         boolean hasText = text != null && !text.isBlank();
-        boolean hasPhotos = photos != null && !photos.isEmpty();
+        boolean hasFiles = files != null && !files.isEmpty();
 
         switch (taskType) {
             case TEXT -> {
                 if (!hasText)
-                    throw new BusinessLogicException("This task requires a text answer");
+                    throw new BusinessLogicException("Это задание требует текстового ответа");
             }
-            case PHOTO -> {
-                if (!hasPhotos)
-                    throw new BusinessLogicException("This task requires a photo");
+            case MEDIA -> {
+                if (!hasFiles)
+                    throw new BusinessLogicException("Это задание требует прикреплённого файла");
             }
-            case TEXT_AND_PHOTO -> {
+            case TEXT_AND_MEDIA -> {
                 if (!hasText)
-                    throw new BusinessLogicException("This task requires a text answer");
-                if (!hasPhotos)
-                    throw new BusinessLogicException("This task requires a photo");
+                    throw new BusinessLogicException("Это задание требует текстового ответа");
+                if (!hasFiles)
+                    throw new BusinessLogicException("Это задание требует прикреплённого файла");
             }
         }
     }
@@ -494,7 +494,7 @@ public class TaskService {
                 .status(submission.getStatus())
                 .text(submission.getText())
                 .createdAtEpoch(submission.getCreatedAtEpoch())
-                .photoIds(submission.getPhotos().stream()
+                .fileIds(submission.getPhotos().stream()
                         .map(SubmissionPhoto::getId)
                         .collect(Collectors.toList()))
                 .build();
@@ -534,22 +534,10 @@ public class TaskService {
                 .status(submission.getStatus())
                 .text(submission.getText())
                 .createdAtEpoch(submission.getCreatedAtEpoch())
-                .photoIds(submission.getPhotos().stream()
+                .fileIds(submission.getPhotos().stream()
                         .map(SubmissionPhoto::getId)
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    private long payoutForUser(TaskSubmission s, Long userId) {
-        long reward = s.getTask().getReward();
-        int n = (s.getParticipants() == null) ? 0 : s.getParticipants().size();
-        if (n <= 0)
-            return 0;
-
-        long base = reward / n;
-        long remainder = reward % n;
-
-        boolean isSubmitter = s.getSubmitter() != null && userId.equals(s.getSubmitter().getId());
-        return isSubmitter ? (base + remainder) : base; // остаток отдаём submitter’у
-    }
 }

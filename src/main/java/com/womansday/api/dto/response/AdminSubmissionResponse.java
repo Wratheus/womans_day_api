@@ -25,5 +25,5 @@ public class AdminSubmissionResponse {
     private SubmissionStatus status;
     private String text;
     private Long createdAtEpoch;
-    private List<Long> photoIds;
+    private List<Long> fileIds;
 }

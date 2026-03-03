@@ -45,51 +45,51 @@ public class GlobalExceptionHandler {
         Map<String, String> fieldErrors = e.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         err -> err.getField(),
-                        err -> err.getDefaultMessage() != null ? err.getDefaultMessage() : "Validation failed",
+                        err -> err.getDefaultMessage() != null ? err.getDefaultMessage() : "Ошибка валидации",
                         (a, b) -> a));
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Bad Request");
-        body.put("message", "Validation failed");
+        body.put("message", "Ошибка валидации");
         body.put("errors", fieldErrors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<Map<String, Object>> handleOptimisticLock(ObjectOptimisticLockingFailureException e) {
-        return buildResponse(HttpStatus.CONFLICT, "Resource was modified by another request, please retry");
+        return buildResponse(HttpStatus.CONFLICT, "Ресурс был изменён другим запросом, пожалуйста, повторите попытку");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, Object>> handleMaxUploadSize(MaxUploadSizeExceededException e) {
-        return buildResponse(HttpStatus.PAYLOAD_TOO_LARGE, "File too large. Maximum size: 10MB");
+        return buildResponse(HttpStatus.PAYLOAD_TOO_LARGE, "Файл слишком большой. Максимальный размер: 200 МБ");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleBadJson(HttpMessageNotReadableException e) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "Malformed request body");
+        return buildResponse(HttpStatus.BAD_REQUEST, "Некорректное тело запроса");
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Map<String, Object>> handleMissingParam(MissingServletRequestParameterException e) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "Missing required parameter: " + e.getParameterName());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Отсутствует обязательный параметр: " + e.getParameterName());
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)
     public ResponseEntity<Map<String, Object>> handleMissingPart(MissingServletRequestPartException e) {
         String hint = "avatar".equals(e.getRequestPartName())
-                ? " Use form-data with key 'avatar' and type File."
-                : " Use form-data with key '" + e.getRequestPartName() + "'.";
+                ? " Используйте form-data с ключом 'avatar' и типом File."
+                : " Используйте form-data с ключом '" + e.getRequestPartName() + "'.";
         return buildResponse(HttpStatus.BAD_REQUEST,
-                "Missing required part: " + e.getRequestPartName() + "." + hint);
+                "Отсутствует обязательная часть запроса: " + e.getRequestPartName() + "." + hint);
     }
 
     @ExceptionHandler(MultipartException.class)
     public ResponseEntity<Map<String, Object>> handleMultipart(MultipartException e) {
         log.warn("Multipart error: {}", e.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST,
-                "Invalid multipart request. Do not set Content-Type manually in Postman — use Body → form-data and add file with correct key (avatar / photos).");
+                "Некорректный multipart-запрос. Не задавайте Content-Type вручную — используйте Body → form-data и добавьте файл с нужным ключом (avatar / photos).");
     }
 
     @ExceptionHandler(SecurityException.class)
@@ -100,7 +100,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception e) {
         log.error("Unhandled exception", e);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Внутренняя ошибка сервера");
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {

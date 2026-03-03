@@ -10,18 +10,18 @@ import lombok.Data;
 @Data
 public class CreateTaskRequest {
 
-    @NotBlank(message = "Title is required")
-    @Size(max = 200, message = "Title must not exceed 200 characters")
+    @NotBlank(message = "Название обязательно")
+    @Size(max = 200, message = "Название не должно превышать 200 символов")
     private String title;
 
-    @Size(max = 5000, message = "Description must not exceed 5000 characters")
+    @Size(max = 5000, message = "Описание не должно превышать 5000 символов")
     private String description;
 
-    @NotNull(message = "Reward is required")
-    @Min(value = 1, message = "Reward must be at least 1")
+    @NotNull(message = "Вознаграждение обязательно")
+    @Min(value = 1, message = "Вознаграждение должно быть не менее 1")
     private Integer reward;
 
-    @NotNull(message = "Type is required")
+    @NotNull(message = "Тип обязателен")
     private TaskType type;
 
     private Boolean collaborative = false;
