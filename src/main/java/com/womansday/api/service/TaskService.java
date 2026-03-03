@@ -88,6 +88,10 @@ public class TaskService {
             }
         }
 
+        if (participants.size() <= 1 && task.getCollaborative()) {
+            throw new BusinessLogicException("Это задание должно быть выполнено совместно");
+        }
+
         for (User participant : participants) {
             if (submissionRepository.hasActiveSubmission(participant.getId(), taskId)) {
                 throw new BusinessLogicException(
