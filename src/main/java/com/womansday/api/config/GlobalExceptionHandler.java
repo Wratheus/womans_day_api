@@ -63,7 +63,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, Object>> handleMaxUploadSize(MaxUploadSizeExceededException e) {
-        return buildResponse(HttpStatus.PAYLOAD_TOO_LARGE, "Файл слишком большой. Максимальный размер: 200 МБ");
+        long maxBytes = e.getMaxUploadSize();
+        String limitMessage = maxBytes > 0
+                ? String.format("Максимальный размер: %d МБ", maxBytes / (1024 * 1024))
+                : "Максимальный размер: 200 МБ";
+        return buildResponse(HttpStatus.PAYLOAD_TOO_LARGE, "Файл слишком большой. " + limitMessage);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
