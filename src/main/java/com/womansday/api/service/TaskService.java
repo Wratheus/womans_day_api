@@ -274,9 +274,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public BudgetResponse getBudget() {
-        long totalRewards = taskRepository.sumAllRewards();
-        long userCount = userRepository.countByRoleNot(Role.ADMIN);
-        long totalBudget = totalRewards * userCount;
+        long totalBudget = 50000;
         long approvedBudget = submissionRepository.sumRewardsByStatus(SubmissionStatus.APPROVED);
 
         return BudgetResponse.builder()
