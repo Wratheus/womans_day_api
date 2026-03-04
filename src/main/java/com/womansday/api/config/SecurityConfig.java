@@ -48,7 +48,8 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/api/brew-coffee").permitAll()
+                        .requestMatchers("/api/").permitAll()
                         .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         // .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
