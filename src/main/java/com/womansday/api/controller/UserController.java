@@ -95,7 +95,7 @@ public class UserController {
     }
 
     @GetMapping("/leaderboard")
-    public ResponseEntity<List<LeaderboardEntry>> getLeaderboard() {
-        return ResponseEntity.ok(taskService.getLeaderboard());
+    public ResponseEntity<List<LeaderboardEntry>> getLeaderboard(Authentication authentication) {
+        return ResponseEntity.ok(taskService.getLeaderboard(SecurityUtils.extractRole(authentication)));
     }
 }

@@ -60,6 +60,10 @@ public class TaskService {
         User submitter = userRepository.findById(submitterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
+        if (Boolean.TRUE.equals(submitter.getHidden())) {
+            throw new BusinessLogicException("Скрытый пользователь не может отправлять задания");
+        }
+
         if (text != null && text.length() > MAX_TEXT_LENGTH) {
             throw new BusinessLogicException("Текст не должен превышать " + MAX_TEXT_LENGTH + " символов");
         }
@@ -84,6 +88,9 @@ public class TaskService {
                                 "Участник с ID " + pid + " не найден"));
                 if (submitter.getRole() == Role.USER && participant.getRole() == Role.ADMIN) {
                     throw new BusinessLogicException("Нельзя добавить администратора в качестве участника");
+                }
+                if (Boolean.TRUE.equals(participant.getHidden())) {
+                    throw new BusinessLogicException("Нельзя добавить скрытого пользователя в качестве участника");
                 }
                 pendingParticipants.add(participant);
             }
@@ -168,6 +175,10 @@ public class TaskService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+
+        if (Boolean.TRUE.equals(user.getHidden())) {
+            throw new BusinessLogicException("Скрытый пользователь не может принимать приглашения");
+        }
 
         if (!submission.getPendingParticipants().contains(user)) {
             throw new BusinessLogicException("Вы не приглашены к этому выполнению");
@@ -381,8 +392,10 @@ public class TaskService {
     // --- Leaderboard ---
 
     @Transactional(readOnly = true)
-    public List<LeaderboardEntry> getLeaderboard() {
-        List<User> users = userRepository.findVisibleByRoleNot(Role.ADMIN);
+    public List<LeaderboardEntry> getLeaderboard(Role callerRole) {
+        List<User> users = callerRole == Role.ADMIN
+                ? userRepository.findByRoleNot(Role.ADMIN)
+                : userRepository.findVisibleByRoleNot(Role.ADMIN);
         List<LeaderboardEntry> entries = new ArrayList<>();
 
         for (User user : users) {
