@@ -89,7 +89,7 @@ public class TaskService {
             }
         }
 
-        if (participants.size() <= 1 && task.getCollaborative()) {
+        if (task.getCollaborative() && (participants.size() + pendingParticipants.size()) <= 1) {
             throw new BusinessLogicException("Это задание должно быть выполнено совместно");
         }
 
