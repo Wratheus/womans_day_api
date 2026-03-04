@@ -429,12 +429,14 @@ public class TaskService {
     // --- Helpers ---
 
     private void deleteSubmissionPhotos(TaskSubmission submission) {
-        for (SubmissionPhoto photo : submission.getPhotos()) {
-            try {
-                photoStorageService.deleteByKey(photo.getFilePath());
-            } catch (IOException ignored) {
-            }
-        }
+        /// do not delete orphans yet
+        return;
+        // for (SubmissionPhoto photo : submission.getPhotos()) {
+        //     try {
+        //         photoStorageService.deleteByKey(photo.getFilePath());
+        //     } catch (IOException ignored) {
+        //     }
+        // }
     }
 
     private TaskResponse toTaskResponseAdmin(Task task) {
