@@ -25,6 +25,19 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
         List<TaskSubmission> findByPendingParticipantAndTaskId(@Param("userId") Long userId,
                         @Param("taskId") Long taskId);
 
+        @Query("""
+                            SELECT COUNT(s) > 0
+                            FROM TaskSubmission s
+                            JOIN s.pendingParticipants pp
+                            WHERE pp.id = :userId
+                              AND s.task.id = :taskId
+                              AND s.status = 'WAITING_FOR_PARTICIPANTS'
+                              AND s.id <> :excludeSubmissionId
+                        """)
+        boolean hasPendingInvitationOtherThan(@Param("userId") Long userId,
+                        @Param("taskId") Long taskId,
+                        @Param("excludeSubmissionId") Long excludeSubmissionId);
+
         @Query("SELECT COUNT(s) > 0 FROM TaskSubmission s JOIN s.participants p " +
                         "WHERE p.id = :userId AND s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED', 'WAITING_FOR_PARTICIPANTS')")
         boolean hasActiveSubmission(@Param("userId") Long userId, @Param("taskId") Long taskId);

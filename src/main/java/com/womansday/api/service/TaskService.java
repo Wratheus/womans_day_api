@@ -176,8 +176,11 @@ public class TaskService {
         if (submissionRepository.hasActiveSubmission(userId, submission.getTask().getId())) {
             throw new BusinessLogicException("У вас уже есть активное выполнение этого задания");
         }
-        if (submissionRepository.hasPendingInvitation(userId, submission.getTask().getId())) {
-            throw new BusinessLogicException("У вас уже есть ожидающее приглашение для этого задания");
+        if (submissionRepository.hasPendingInvitationOtherThan(
+                userId,
+                submission.getTask().getId(),
+                submission.getId())) {
+            throw new BusinessLogicException("У вас уже есть другое ожидающее приглашение для этого задания");
         }
 
         submission.getPendingParticipants().remove(user);
