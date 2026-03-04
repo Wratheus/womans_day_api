@@ -2,6 +2,8 @@ package com.womansday.api.config;
 
 import com.womansday.api.exception.BusinessLogicException;
 import com.womansday.api.exception.ResourceNotFoundException;
+import com.womansday.api.exception.TeapotException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,11 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(TeapotException.class)
+    public ResponseEntity<Map<String, Object>> handleTeapot(TeapotException e) {
+        return buildResponse(HttpStatus.I_AM_A_TEAPOT, e.getMessage());
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException e) {

@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.womansday.api.exception.TeapotException;
+
 import java.util.Map;
 
 @RestController
@@ -13,7 +15,18 @@ public class RootController {
     public ResponseEntity<Map<String, String>> root() {
         return ResponseEntity.ok(Map.of(
                 "name", "WomansDay API",
-                "status", "running"
-        ));
+                "status", "running"));
     }
+
+    @GetMapping("/brew-coffee")
+    public String makeCoffee() {
+        boolean isTeapot = true;
+
+        if (isTeapot) {
+            throw new TeapotException("Я чайник, я не могу варить кофе!");
+        }
+
+        return "Кофе готов!";
+    }
+
 }
