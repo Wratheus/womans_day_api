@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,16 +134,20 @@ public class TaskService {
                 if (contentType == null || contentType.isBlank()) {
                     contentType = "application/octet-stream";
                 }
-                try {
+
+                try (InputStream in = file.getInputStream()) {
                     String filePath = photoStorageService.storeSubmissionFile(
-                            submission.getId(), contentType, file.getBytes());
+                            submission.getId(), contentType, in);
+
                     SubmissionPhoto fileEntity = SubmissionPhoto.builder()
                             .submission(submission)
                             .filePath(filePath)
                             .contentType(contentType)
                             .build();
+
                     photoRepository.save(fileEntity);
                     submission.getPhotos().add(fileEntity);
+
                 } catch (IOException e) {
                     throw new BusinessLogicException("Ошибка загрузки файла");
                 }

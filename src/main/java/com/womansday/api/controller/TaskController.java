@@ -8,7 +8,10 @@ import com.womansday.api.security.SecurityUtils;
 import com.womansday.api.service.PhotoStorageService;
 import com.womansday.api.service.TaskService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -80,18 +84,22 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getBudget());
     }
 
+    @SuppressWarnings("null")
     @GetMapping("/files/{fileId}")
-    public ResponseEntity<byte[]> getFile(@PathVariable Long fileId, Authentication authentication) {
+    public ResponseEntity<Resource> getFile(@PathVariable Long fileId, Authentication authentication) {
         Long userId = SecurityUtils.extractUserId(authentication);
         String role = SecurityUtils.extractRoleString(authentication);
 
         SubmissionPhoto file = taskService.getPhoto(fileId, userId, role);
 
         try {
-            byte[] data = photoStorageService.loadByKey(file.getFilePath());
+            Path path = photoStorageService.resolvePathByKey(file.getFilePath());
+            Resource resource = new UrlResource(path.toUri());
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, file.getContentType())
-                    .body(data);
+                    .body(resource);
+
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }

@@ -5,11 +5,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.*;
 import java.util.Map;
 import java.util.UUID;
+
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 @Service
 public class PhotoStorageService {
@@ -53,7 +56,8 @@ public class PhotoStorageService {
         Files.createDirectories(storageRoot);
     }
 
-    public String storeSubmissionFile(Long submissionId, String contentType, byte[] data) throws IOException {
+    // ✅ STREAM version
+    public String storeSubmissionFile(Long submissionId, String contentType, InputStream data) throws IOException {
         String ext = resolveExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
         String key = Paths.get("submissions", String.valueOf(submissionId), filename).toString();
@@ -61,7 +65,8 @@ public class PhotoStorageService {
         return key;
     }
 
-    public String storeAvatar(Long userId, String contentType, byte[] data) throws IOException {
+    // ✅ STREAM version
+    public String storeAvatar(Long userId, String contentType, InputStream data) throws IOException {
         String ext = requireImageExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
         String key = Paths.get("avatars", String.valueOf(userId), filename).toString();
@@ -74,17 +79,25 @@ public class PhotoStorageService {
         return Files.readAllBytes(path);
     }
 
+    // ✅ для download-стрима (если захочешь)
+    public Path resolvePathByKey(String key) {
+        return resolveAndValidateKey(key);
+    }
+
     public void deleteByKey(String key) throws IOException {
         Path path = resolveAndValidateKey(key);
         Files.deleteIfExists(path);
     }
 
-    private void writeByKey(String key, byte[] data) throws IOException {
+    private void writeByKey(String key, InputStream data) throws IOException {
         Path path = resolveAndValidateKey(key);
         Files.createDirectories(path.getParent());
-        Files.write(path, data,
-                java.nio.file.StandardOpenOption.CREATE_NEW,
-                java.nio.file.StandardOpenOption.WRITE);
+
+        // CREATE_NEW — чтобы не перезаписывать случайно
+        try (OutputStream out = Files.newOutputStream(path, CREATE_NEW, WRITE)) {
+            // Java 9+: data.transferTo(out) — супер
+            data.transferTo(out);
+        }
     }
 
     private Path resolveAndValidateKey(String key) {
@@ -100,32 +113,34 @@ public class PhotoStorageService {
         return resolved;
     }
 
-    private String resolveExt(String contentType) {
-        if (contentType == null) {
-            return "bin";
-        }
+    private String normalizeContentType(String contentType) {
+        if (contentType == null)
+            return null;
+        return contentType.split(";")[0].trim().toLowerCase();
+    }
 
-        contentType = contentType.toLowerCase();
+    private String resolveExt(String contentType) {
+        contentType = normalizeContentType(contentType);
+        if (contentType == null)
+            return "bin";
 
         String known = MIME_TO_EXT.get(contentType);
         if (known != null)
             return known;
 
         if (contentType.contains("/")) {
-            String sub = contentType.split("/")[1].split(";")[0].trim().toLowerCase();
+            String sub = contentType.split("/")[1].trim();
             if (!sub.isBlank())
                 return sub;
         }
-
         return "bin";
     }
 
     private String requireImageExt(String contentType) {
+        contentType = normalizeContentType(contentType);
         if (contentType == null) {
             throw new IllegalArgumentException("Content type is null");
         }
-
-        contentType = contentType.toLowerCase();
 
         String ext = IMAGE_MIME_TO_EXT.get(contentType);
         if (ext == null) {

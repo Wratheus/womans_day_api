@@ -16,6 +16,7 @@ services:
       - "8080:8080"
     volumes:
       - media-prod:/app/media
+      - tmp-prod:/tmp
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_HOST: db
@@ -30,13 +31,12 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/internal/monitor/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/internal/monitor/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
     restart: unless-stopped
-
   # api-dev:
   #   build: .
   #   ports:
@@ -60,5 +60,4 @@ services:
 
 volumes:
   pg-data:
-  media-prod:
-  # media-dev:
+  media-prod: # media-dev:
