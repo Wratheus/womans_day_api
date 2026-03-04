@@ -176,12 +176,21 @@ public class TaskService {
         if (submissionRepository.hasActiveSubmission(userId, submission.getTask().getId())) {
             throw new BusinessLogicException("У вас уже есть активное выполнение этого задания");
         }
+        if (submissionRepository.hasPendingInvitation(userId, submission.getTask().getId())) {
+            throw new BusinessLogicException("У вас уже есть ожидающее приглашение для этого задания");
+        }
 
         submission.getPendingParticipants().remove(user);
         submission.getParticipants().add(user);
 
         if (submission.getPendingParticipants().isEmpty()) {
-            submission.setStatus(SubmissionStatus.PENDING);
+            if (Boolean.TRUE.equals(submission.getTask().getCollaborative())
+                    && submission.getParticipants().size() < 2) {
+                submission.setStatus(SubmissionStatus.CANCELLED);
+                deleteSubmissionPhotos(submission);
+            } else {
+                submission.setStatus(SubmissionStatus.PENDING);
+            }
         }
 
         submissionRepository.save(submission);
@@ -206,7 +215,13 @@ public class TaskService {
         submission.getPendingParticipants().remove(user);
 
         if (submission.getPendingParticipants().isEmpty()) {
-            submission.setStatus(SubmissionStatus.PENDING);
+            if (Boolean.TRUE.equals(submission.getTask().getCollaborative())
+                    && submission.getParticipants().size() < 2) {
+                submission.setStatus(SubmissionStatus.CANCELLED);
+                deleteSubmissionPhotos(submission);
+            } else {
+                submission.setStatus(SubmissionStatus.PENDING);
+            }
         }
 
         submissionRepository.save(submission);
