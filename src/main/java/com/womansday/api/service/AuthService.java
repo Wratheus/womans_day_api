@@ -12,6 +12,8 @@ import com.womansday.api.repository.UserRepository;
 import com.womansday.api.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,16 +37,18 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
-        if (userRepository.count() >= MAX_USERS) {
+        if (userRepository.countByRoleNot(Role.ADMIN) >= MAX_USERS) {
             throw new BusinessLogicException("Регистрация закрыта. Достигнут лимит пользователей");
         }
 
-        if (userRepository.existsByLogin(request.getLogin())) {
+        String login = request.getLogin().trim().toLowerCase();
+
+        if (userRepository.existsByLogin(login)) {
             throw new BusinessLogicException("Этот логин уже занят");
         }
 
         User user = User.builder()
-                .login(request.getLogin())
+                .login(login)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -52,7 +56,12 @@ public class AuthService {
                 .role(Role.USER)
                 .build();
 
-        user = userRepository.save(user);
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessLogicException("Этот логин уже занят");
+        }
+
         log.info("User registered: login={}", user.getLogin());
 
         return buildAuthResponse(user);
