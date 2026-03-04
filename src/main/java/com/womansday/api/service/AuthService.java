@@ -68,14 +68,16 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByLogin(request.getLogin())
+        String login = request.getLogin().trim().toLowerCase();
+
+        User user = userRepository.findByLogin(login)
                 .orElseThrow(() -> {
-                    log.warn("Login attempt with unknown login: {}", request.getLogin());
+                    log.warn("Login attempt with unknown login: {}", login);
                     return new BusinessLogicException("Неверный логин или пароль");
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            log.warn("Failed login attempt for user: {}", request.getLogin());
+            log.warn("Failed login attempt for user: {}", login);
             throw new BusinessLogicException("Неверный логин или пароль");
         }
 
