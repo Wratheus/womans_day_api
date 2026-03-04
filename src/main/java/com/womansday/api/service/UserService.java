@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,9 +104,8 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
-
         String contentType = avatar.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
+        if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
             throw new BusinessLogicException("Разрешены только изображения");
         }
 
@@ -114,10 +114,12 @@ public class UserService {
                 photoStorageService.deleteByKey(user.getAvatarPath());
             }
 
-            String path = photoStorageService.storeAvatar(userId, contentType, avatar.getBytes());
-            user.setAvatarPath(path);
-            user.setAvatarContentType(contentType);
-            userRepository.save(user);
+            try (InputStream in = avatar.getInputStream()) {
+                String path = photoStorageService.storeAvatar(userId, contentType, in);
+                user.setAvatarPath(path);
+                user.setAvatarContentType(contentType);
+                userRepository.save(user);
+            }
 
             return "/api/users/" + userId + "/avatar";
         } catch (IOException e) {
