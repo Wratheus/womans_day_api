@@ -48,9 +48,9 @@ public class DataInitializer implements CommandLineRunner {
 
         if (userRepository.count() == 0) {
             User admin = User.builder()
-                    .login(adminLogin)
+                    .login(adminLogin.trim().toLowerCase())
                     .passwordHash(passwordEncoder.encode(adminPassword))
-                    .firstName("Admin")
+                    .firstName("Adminchik")
                     .lastName("Administrator")
                     .department("Administration")
                     .role(Role.ADMIN)
