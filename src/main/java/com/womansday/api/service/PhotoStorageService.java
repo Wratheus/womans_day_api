@@ -14,17 +14,25 @@ import java.util.UUID;
 @Service
 public class PhotoStorageService {
 
-    private static final Map<String, String> IMAGE_MIME_TO_EXT = Map.of(
-            "image/jpeg", "jpg",
-            "image/png", "png",
-            "image/webp", "webp",
-            "image/gif", "gif");
-
-    private static final Map<String, String> MIME_TO_EXT = Map.ofEntries(
+    private static final Map<String, String> IMAGE_MIME_TO_EXT = Map.ofEntries(
             Map.entry("image/jpeg", "jpg"),
+            Map.entry("image/jpg", "jpg"),
+            Map.entry("image/pjpeg", "jpg"),
             Map.entry("image/png", "png"),
             Map.entry("image/webp", "webp"),
             Map.entry("image/gif", "gif"),
+            Map.entry("image/heic", "heic"),
+            Map.entry("image/heif", "heif"));
+
+    private static final Map<String, String> MIME_TO_EXT = Map.ofEntries(
+            Map.entry("image/jpeg", "jpg"),
+            Map.entry("image/jpg", "jpg"),
+            Map.entry("image/pjpeg", "jpg"),
+            Map.entry("image/png", "png"),
+            Map.entry("image/webp", "webp"),
+            Map.entry("image/gif", "gif"),
+            Map.entry("image/heic", "heic"),
+            Map.entry("image/heif", "heif"),
             Map.entry("video/mp4", "mp4"),
             Map.entry("video/quicktime", "mov"),
             Map.entry("video/x-msvideo", "avi"),
@@ -93,16 +101,32 @@ public class PhotoStorageService {
     }
 
     private String resolveExt(String contentType) {
-        String known = MIME_TO_EXT.get(contentType);
-        if (known != null) return known;
-        if (contentType != null && contentType.contains("/")) {
-            String sub = contentType.split("/")[1].split(";")[0].trim().toLowerCase();
-            if (!sub.isBlank()) return sub;
+        if (contentType == null) {
+            return "bin";
         }
+
+        contentType = contentType.toLowerCase();
+
+        String known = MIME_TO_EXT.get(contentType);
+        if (known != null)
+            return known;
+
+        if (contentType.contains("/")) {
+            String sub = contentType.split("/")[1].split(";")[0].trim().toLowerCase();
+            if (!sub.isBlank())
+                return sub;
+        }
+
         return "bin";
     }
 
     private String requireImageExt(String contentType) {
+        if (contentType == null) {
+            throw new IllegalArgumentException("Content type is null");
+        }
+
+        contentType = contentType.toLowerCase();
+
         String ext = IMAGE_MIME_TO_EXT.get(contentType);
         if (ext == null) {
             throw new IllegalArgumentException("Unsupported content type: " + contentType);

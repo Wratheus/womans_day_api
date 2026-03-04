@@ -29,8 +29,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private static final int MAX_USERS = 140;
+
     @SuppressWarnings("null")
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
+
+        if (userRepository.count() >= MAX_USERS) {
+            throw new BusinessLogicException("Регистрация закрыта. Достигнут лимит пользователей");
+        }
+
         if (userRepository.existsByLogin(request.getLogin())) {
             throw new BusinessLogicException("Этот логин уже занят");
         }
