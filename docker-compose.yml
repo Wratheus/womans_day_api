@@ -60,4 +60,5 @@ services:
 
 volumes:
   pg-data:
-  media-prod: # media-dev:
+  media-prod:
+  tmp-prod:
