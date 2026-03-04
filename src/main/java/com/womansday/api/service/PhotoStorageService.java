@@ -56,7 +56,6 @@ public class PhotoStorageService {
         Files.createDirectories(storageRoot);
     }
 
-    // ✅ STREAM version
     public String storeSubmissionFile(Long submissionId, String contentType, InputStream data) throws IOException {
         String ext = resolveExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
@@ -65,7 +64,6 @@ public class PhotoStorageService {
         return key;
     }
 
-    // ✅ STREAM version
     public String storeAvatar(Long userId, String contentType, InputStream data) throws IOException {
         String ext = requireImageExt(contentType);
         String filename = UUID.randomUUID() + "." + ext;
@@ -79,7 +77,6 @@ public class PhotoStorageService {
         return Files.readAllBytes(path);
     }
 
-    // ✅ для download-стрима (если захочешь)
     public Path resolvePathByKey(String key) {
         return resolveAndValidateKey(key);
     }
@@ -93,9 +90,7 @@ public class PhotoStorageService {
         Path path = resolveAndValidateKey(key);
         Files.createDirectories(path.getParent());
 
-        // CREATE_NEW — чтобы не перезаписывать случайно
         try (OutputStream out = Files.newOutputStream(path, CREATE_NEW, WRITE)) {
-            // Java 9+: data.transferTo(out) — супер
             data.transferTo(out);
         }
     }
