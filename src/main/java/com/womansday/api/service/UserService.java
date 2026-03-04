@@ -54,6 +54,7 @@ public class UserService {
 
     @Transactional
     public UserResponse hideUser(Long userId) {
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         user.setHidden(true);
@@ -63,6 +64,7 @@ public class UserService {
 
     @Transactional
     public UserResponse revealUser(Long userId) {
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         user.setHidden(false);
