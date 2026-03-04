@@ -15,4 +15,5 @@ public class UserResponse {
     private String department;
     private boolean hasAvatar;
     private Long earned;
+    private Boolean hidden;
 }

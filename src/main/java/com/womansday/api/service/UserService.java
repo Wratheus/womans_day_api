@@ -37,7 +37,7 @@ public class UserService {
         if (callerRole == Role.ADMIN) {
             users = userRepository.findAll();
         } else {
-            users = userRepository.findByRoleNot(Role.ADMIN);
+            users = userRepository.findVisibleByRoleNot(Role.ADMIN);
         }
 
         Map<Long, Long> earnedMap = new HashMap<>();
@@ -50,6 +50,24 @@ public class UserService {
         return users.stream()
                 .map(u -> toUserResponse(u, callerRole, earnedMap))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserResponse hideUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+        user.setHidden(true);
+        userRepository.save(user);
+        return toUserResponse(user, Role.ADMIN, new HashMap<>());
+    }
+
+    @Transactional
+    public UserResponse revealUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+        user.setHidden(false);
+        userRepository.save(user);
+        return toUserResponse(user, Role.ADMIN, new HashMap<>());
     }
 
     @Transactional(readOnly = true)
@@ -156,8 +174,10 @@ public class UserService {
 
     private UserResponse toUserResponse(User user, Role callerRole, Map<Long, Long> earnedMap) {
         Long earned = null;
+        Boolean hidden = null;
         if (callerRole == Role.ADMIN) {
             earned = earnedMap.getOrDefault(user.getId(), 0L);
+            hidden = Boolean.TRUE.equals(user.getHidden());
         }
 
         return UserResponse.builder()
@@ -168,6 +188,7 @@ public class UserService {
                 .department(user.getDepartment())
                 .hasAvatar(user.getAvatarPath() != null)
                 .earned(earned)
+                .hidden(hidden)
                 .build();
     }
 

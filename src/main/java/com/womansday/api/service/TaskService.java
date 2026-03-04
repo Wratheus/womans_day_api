@@ -382,7 +382,7 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<LeaderboardEntry> getLeaderboard() {
-        List<User> users = userRepository.findByRoleNot(Role.ADMIN);
+        List<User> users = userRepository.findVisibleByRoleNot(Role.ADMIN);
         List<LeaderboardEntry> entries = new ArrayList<>();
 
         for (User user : users) {

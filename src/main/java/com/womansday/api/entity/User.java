@@ -42,6 +42,10 @@ public class User {
     @Column(length = 100)
     private String avatarContentType;
 
+    @Builder.Default
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean hidden = false;
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

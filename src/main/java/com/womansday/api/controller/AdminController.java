@@ -5,7 +5,9 @@ import com.womansday.api.dto.request.ReviewRequest;
 import com.womansday.api.dto.request.UpdateTaskRequest;
 import com.womansday.api.dto.response.AdminSubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
+import com.womansday.api.dto.response.UserResponse;
 import com.womansday.api.service.TaskService;
+import com.womansday.api.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,7 @@ import java.util.List;
 public class AdminController {
 
     private final TaskService taskService;
+    private final UserService userService;
 
     @GetMapping("/submissions")
     public ResponseEntity<List<AdminSubmissionResponse>> getAllSubmissions(
@@ -51,5 +54,15 @@ public class AdminController {
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/users/{id}/hide")
+    public ResponseEntity<UserResponse> hideUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.hideUser(id));
+    }
+
+    @PatchMapping("/users/{id}/reveal")
+    public ResponseEntity<UserResponse> revealUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.revealUser(id));
     }
 }
