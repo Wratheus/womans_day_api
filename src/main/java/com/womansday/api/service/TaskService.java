@@ -399,6 +399,7 @@ public class TaskService {
                     .department(user.getDepartment())
                     .hasAvatar(user.getAvatarPath() != null)
                     .earned(earned)
+                    .hidden(Boolean.TRUE.equals(user.getHidden()))
                     .build());
         }
 

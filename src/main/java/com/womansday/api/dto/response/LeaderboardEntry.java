@@ -15,4 +15,5 @@ public class LeaderboardEntry {
     private String department;
     private Boolean hasAvatar;
     private Long earned;
+    private Boolean hidden;
 }
