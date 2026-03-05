@@ -1,6 +1,12 @@
 package com.womansday.api.service;
 
+import com.womansday.api.entity.SubmissionMedia;
+import com.womansday.api.entity.Task;
+import com.womansday.api.entity.TaskSubmission;
+import com.womansday.api.entity.User;
+import com.womansday.api.repository.SubmissionMediaRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -9,14 +15,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.Map;
-import java.util.UUID;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
 
+@Slf4j
 @Service
 public class MediaStorageService {
 
@@ -48,10 +57,20 @@ public class MediaStorageService {
             Map.entry("audio/wav", "wav"),
             Map.entry("application/pdf", "pdf"));
 
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter
+            .ofPattern("dd.MM_HH-mm")
+            .withZone(ZoneId.of("Europe/Moscow"));
+
+    private final SubmissionMediaRepository mediaRepository;
+
     private Path storageRoot;
 
     @Value("${app.media.storage-dir}")
     private String storageDir;
+
+    public MediaStorageService(SubmissionMediaRepository mediaRepository) {
+        this.mediaRepository = mediaRepository;
+    }
 
     @PostConstruct
     public void init() throws IOException {
@@ -85,20 +104,89 @@ public class MediaStorageService {
     }
 
     public void streamAllAsZip(OutputStream out) throws IOException {
+        List<SubmissionMedia> mediaList = mediaRepository.findAllApprovedWithDetails();
+
+        Set<String> knownPaths = new HashSet<>();
+        Set<String> usedNames = new HashSet<>();
+
         try (ZipOutputStream zos = new ZipOutputStream(out)) {
             zos.setLevel(1);
-            Files.walkFileTree(storageRoot, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    String entryName = storageRoot.relativize(file).toString();
-                    zos.putNextEntry(new ZipEntry(entryName));
-                    Files.copy(file, zos);
-                    zos.closeEntry();
-                    zos.flush();
-                    return FileVisitResult.CONTINUE;
+
+            // 1) Одобренные файлы с понятными именами
+            for (SubmissionMedia media : mediaList) {
+                knownPaths.add(media.getFilePath());
+
+                Path filePath = resolveAndValidateKey(media.getFilePath());
+                if (!Files.exists(filePath)) {
+                    log.warn("Media file missing on disk: id={}, path={}", media.getId(), media.getFilePath());
+                    continue;
                 }
-            });
+
+                TaskSubmission submission = media.getSubmission();
+                Task task = submission.getTask();
+                User submitter = submission.getSubmitter();
+
+                String date = DATE_FMT.format(Instant.ofEpochMilli(submission.getCreatedAtEpoch()));
+                String ext = getExtension(media.getFilePath());
+
+                String baseName = sanitize(task.getTitle())
+                        + "_" + sanitize(submitter.getLastName() + submitter.getFirstName())
+                        + "_" + date;
+
+                String entryName = baseName + "." + ext;
+                int counter = 1;
+                while (usedNames.contains(entryName)) {
+                    entryName = baseName + "_" + counter + "." + ext;
+                    counter++;
+                }
+                usedNames.add(entryName);
+
+                zos.putNextEntry(new ZipEntry(entryName));
+                Files.copy(filePath, zos);
+                zos.closeEntry();
+                zos.flush();
+            }
+
+            // 2) Орфаны — файлы на диске без записи в БД
+            Path submissionsDir = storageRoot.resolve("submissions");
+            if (Files.exists(submissionsDir)) {
+                Files.walkFileTree(submissionsDir, new SimpleFileVisitor<>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        String relativePath = storageRoot.relativize(file).toString();
+                        if (!knownPaths.contains(relativePath)) {
+                            String entryName = "_orphans/" + file.getFileName().toString();
+                            int c = 1;
+                            while (usedNames.contains(entryName)) {
+                                String name = file.getFileName().toString();
+                                String ext = getExtension(name);
+                                String base = name.substring(0, name.length() - ext.length() - 1);
+                                entryName = "_orphans/" + base + "_" + c + "." + ext;
+                                c++;
+                            }
+                            usedNames.add(entryName);
+
+                            zos.putNextEntry(new ZipEntry(entryName));
+                            Files.copy(file, zos);
+                            zos.closeEntry();
+                            zos.flush();
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
         }
+    }
+
+    private static String sanitize(String name) {
+        return name.replaceAll("[\\\\/:*?\"<>|\\s]+", "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^_|_$", "");
+    }
+
+    private static String getExtension(String path) {
+        int dot = path.lastIndexOf('.');
+        return dot >= 0 ? path.substring(dot + 1) : "bin";
     }
 
     public void deleteByKey(String key) throws IOException {
