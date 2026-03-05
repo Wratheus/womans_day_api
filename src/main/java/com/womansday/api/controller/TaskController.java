@@ -9,7 +9,7 @@ import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -92,16 +91,15 @@ public class TaskController {
 
         SubmissionMedia file = taskService.getMediaFile(fileId, userId, role);
 
-        try {
-            Path path = mediaStorageService.resolvePathByKey(file.getFilePath());
-            Resource resource = new UrlResource(path.toUri());
+        Path path = mediaStorageService.resolvePathByKey(file.getFilePath());
+        Resource resource = new FileSystemResource(path);
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_TYPE, file.getContentType())
-                    .body(resource);
-
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
         }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, file.getContentType())
+                .body(resource);
     }
 }
