@@ -242,7 +242,7 @@ public class TaskService {
     }
 
     @Transactional
-    public AdminSubmissionResponse reviewSubmission(Long submissionId, boolean approved) {
+    public AdminSubmissionResponse reviewSubmission(Long submissionId, boolean approved, String comment) {
         TaskSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
 
@@ -251,6 +251,7 @@ public class TaskService {
         }
 
         submission.setStatus(approved ? SubmissionStatus.APPROVED : SubmissionStatus.REJECTED);
+        submission.setAdminComment(comment);
 
         if (!approved) {
             submission.getPendingParticipants().clear();
@@ -534,6 +535,7 @@ public class TaskService {
                         .collect(Collectors.toList()))
                 .status(submission.getStatus())
                 .text(submission.getText())
+                .adminComment(submission.getAdminComment())
                 .createdAtEpoch(submission.getCreatedAtEpoch())
                 .fileIds(submission.getPhotos().stream()
                         .map(SubmissionPhoto::getId)
@@ -574,6 +576,7 @@ public class TaskService {
                         .collect(Collectors.toList()))
                 .status(submission.getStatus())
                 .text(submission.getText())
+                .adminComment(submission.getAdminComment())
                 .createdAtEpoch(submission.getCreatedAtEpoch())
                 .fileIds(submission.getPhotos().stream()
                         .map(SubmissionPhoto::getId)

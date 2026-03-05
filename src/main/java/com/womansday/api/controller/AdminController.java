@@ -35,7 +35,7 @@ public class AdminController {
     public ResponseEntity<AdminSubmissionResponse> reviewSubmission(
             @PathVariable Long submissionId,
             @Valid @RequestBody ReviewRequest request) {
-        return ResponseEntity.ok(taskService.reviewSubmission(submissionId, request.getApproved()));
+        return ResponseEntity.ok(taskService.reviewSubmission(submissionId, request.getApproved(), request.getComment()));
     }
 
     @PostMapping("/tasks")

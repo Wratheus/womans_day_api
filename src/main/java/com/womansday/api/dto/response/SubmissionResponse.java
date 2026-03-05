@@ -21,6 +21,7 @@ public class SubmissionResponse {
     private List<UserResponse> pendingParticipants;
     private SubmissionStatus status;
     private String text;
+    private String adminComment;
     private Long createdAtEpoch;
     private List<Long> fileIds;
 }

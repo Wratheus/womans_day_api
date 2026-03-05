@@ -37,6 +37,9 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String text;
 
+    @Column(columnDefinition = "TEXT")
+    private String adminComment;
+
     @Version
     private Long version;
 
