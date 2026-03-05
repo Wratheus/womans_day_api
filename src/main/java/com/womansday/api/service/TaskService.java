@@ -253,6 +253,10 @@ public class TaskService {
         submission.setStatus(approved ? SubmissionStatus.APPROVED : SubmissionStatus.REJECTED);
         submission.setAdminComment(comment);
 
+        if (approved) {
+            submission.setEarnedReward(submission.getTask().getReward());
+        }
+
         if (!approved) {
             submission.getPendingParticipants().clear();
             deleteSubmissionMedia(submission);
@@ -403,7 +407,7 @@ public class TaskService {
             long earned = submissionRepository
                     .findByParticipantAndStatusWithTaskAndParticipants(user.getId(), SubmissionStatus.APPROVED)
                     .stream()
-                    .mapToLong(s -> s.getTask().getReward())
+                    .mapToLong(s -> s.getEarnedReward() != null ? s.getEarnedReward() : s.getTask().getReward())
                     .sum();
 
             entries.add(LeaderboardEntry.builder()
@@ -548,7 +552,7 @@ public class TaskService {
                 .id(submission.getId())
                 .taskId(submission.getTask().getId())
                 .taskTitle(submission.getTask().getTitle())
-                .taskReward(submission.getTask().getReward())
+                .taskReward(submission.getEarnedReward() != null ? submission.getEarnedReward() : submission.getTask().getReward())
                 .submitterId(submission.getSubmitter().getId())
                 .submitterLogin(submission.getSubmitter().getLogin())
                 .submitterFirstName(submission.getSubmitter().getFirstName())

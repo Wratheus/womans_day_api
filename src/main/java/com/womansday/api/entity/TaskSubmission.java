@@ -40,6 +40,9 @@ public class TaskSubmission {
     @Column(columnDefinition = "TEXT")
     private String adminComment;
 
+    @Column(name = "earned_reward")
+    private Integer earnedReward;
+
     @Version
     private Long version;
 

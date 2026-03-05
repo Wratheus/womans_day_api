@@ -50,14 +50,14 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
                         "WHERE s.task.id = :taskId AND s.status IN ('PENDING', 'APPROVED', 'WAITING_FOR_PARTICIPANTS')")
         boolean hasActiveSubmissionsForTask(@Param("taskId") Long taskId);
 
-        @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p WHERE s.status = :status")
+        @Query("SELECT COALESCE(SUM(COALESCE(s.earnedReward, s.task.reward)), 0) FROM TaskSubmission s JOIN s.participants p WHERE s.status = :status")
         long sumRewardsByStatus(@Param("status") SubmissionStatus status);
 
-        @Query("SELECT COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p " +
+        @Query("SELECT COALESCE(SUM(COALESCE(s.earnedReward, s.task.reward)), 0) FROM TaskSubmission s JOIN s.participants p " +
                         "WHERE p.id = :userId AND s.status = 'APPROVED'")
         long sumApprovedRewardsByUserId(@Param("userId") Long userId);
 
-        @Query("SELECT p.id, COALESCE(SUM(s.task.reward), 0) FROM TaskSubmission s JOIN s.participants p " +
+        @Query("SELECT p.id, COALESCE(SUM(COALESCE(s.earnedReward, s.task.reward)), 0) FROM TaskSubmission s JOIN s.participants p " +
                         "WHERE s.status = 'APPROVED' GROUP BY p.id")
         List<Object[]> sumApprovedRewardsGroupedByUser();
 
