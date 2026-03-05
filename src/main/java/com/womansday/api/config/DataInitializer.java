@@ -1,25 +1,32 @@
 package com.womansday.api.config;
 
 import com.womansday.api.entity.Task;
+import com.womansday.api.entity.TaskSubmission;
 import com.womansday.api.entity.User;
 import com.womansday.api.enums.Role;
+import com.womansday.api.enums.SubmissionStatus;
 import com.womansday.api.enums.TaskType;
 import com.womansday.api.repository.TaskRepository;
+import com.womansday.api.repository.TaskSubmissionRepository;
 import com.womansday.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @SuppressWarnings("null")
 public class DataInitializer implements CommandLineRunner {
 
         private final TaskRepository taskRepository;
+        private final TaskSubmissionRepository submissionRepository;
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
 
@@ -33,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
         private String activeProfile;
 
         @Override
+        @Transactional
         public void run(String... args) {
                 if (activeProfile.contains("prod")) {
                         if (adminPassword == null || adminPassword.isBlank()) {
@@ -397,6 +405,26 @@ public class DataInitializer implements CommandLineRunner {
                                                         .build());
 
                         taskRepository.saveAll(tasks);
+                }
+
+                fixMissingEarnedRewards();
+        }
+
+        private void fixMissingEarnedRewards() {
+                List<TaskSubmission> submissions = submissionRepository
+                                .findAllApprovedWithParticipants();
+
+                int fixed = 0;
+                for (TaskSubmission s : submissions) {
+                        if (s.getEarnedReward() == null) {
+                                s.setEarnedReward(s.getTask().getReward());
+                                submissionRepository.save(s);
+                                fixed++;
+                        }
+                }
+
+                if (fixed > 0) {
+                        log.info("Fixed earnedReward for {} approved submissions", fixed);
                 }
         }
 }
