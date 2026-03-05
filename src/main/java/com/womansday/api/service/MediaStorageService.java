@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import java.util.Map;
 import java.util.UUID;
 
@@ -79,6 +82,23 @@ public class MediaStorageService {
 
     public Path resolvePathByKey(String key) {
         return resolveAndValidateKey(key);
+    }
+
+    public void streamAllAsZip(OutputStream out) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(out)) {
+            zos.setLevel(1);
+            Files.walkFileTree(storageRoot, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    String entryName = storageRoot.relativize(file).toString();
+                    zos.putNextEntry(new ZipEntry(entryName));
+                    Files.copy(file, zos);
+                    zos.closeEntry();
+                    zos.flush();
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
     }
 
     public void deleteByKey(String key) throws IOException {

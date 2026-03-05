@@ -8,8 +8,10 @@ import com.womansday.api.dto.response.AdminSubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.dto.response.UserResponse;
 import com.womansday.api.service.AuthService;
+import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +27,7 @@ import java.util.List;
 public class AdminController {
 
     private final AuthService authService;
+    private final MediaStorageService mediaStorageService;
     private final TaskService taskService;
     private final UserService userService;
 
@@ -75,5 +78,12 @@ public class AdminController {
             @Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(id, request.getNewPassword());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/media/export")
+    public void exportMedia(HttpServletResponse response) throws Exception {
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=\"media.zip\"");
+        mediaStorageService.streamAllAsZip(response.getOutputStream());
     }
 }
