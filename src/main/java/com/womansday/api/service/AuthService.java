@@ -127,6 +127,17 @@ public class AuthService {
         log.info("Password changed for userId={}", userId);
     }
 
+    @Transactional
+    public void resetPassword(Long userId, String newPassword) {
+        @SuppressWarnings("null")
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Password reset by admin for userId={}", userId);
+    }
+
     public void logout(String refreshToken) {
         if (jwtTokenProvider.validateToken(refreshToken)) {
             String jti = jwtTokenProvider.getJti(refreshToken);

@@ -1,11 +1,13 @@
 package com.womansday.api.controller;
 
 import com.womansday.api.dto.request.CreateTaskRequest;
+import com.womansday.api.dto.request.ResetPasswordRequest;
 import com.womansday.api.dto.request.ReviewRequest;
 import com.womansday.api.dto.request.UpdateTaskRequest;
 import com.womansday.api.dto.response.AdminSubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.dto.response.UserResponse;
+import com.womansday.api.service.AuthService;
 import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
 import jakarta.validation.Valid;
@@ -22,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
+    private final AuthService authService;
     private final TaskService taskService;
     private final UserService userService;
 
@@ -64,5 +67,13 @@ public class AdminController {
     @PatchMapping("/users/{id}/reveal")
     public ResponseEntity<UserResponse> revealUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.revealUser(id));
+    }
+
+    @PatchMapping("/users/{id}/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @PathVariable Long id,
+            @Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(id, request.getNewPassword());
+        return ResponseEntity.ok().build();
     }
 }
