@@ -21,3 +21,6 @@ Thumbs.db
 *.jar
 .env
 !gradle/wrapper/gradle-wrapper.jar
+
+# Backups
+backups/

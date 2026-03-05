@@ -46,6 +46,10 @@ public class User {
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean hidden = false;
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    private Integer bonusPoints = 0;
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

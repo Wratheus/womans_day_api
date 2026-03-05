@@ -1,5 +1,6 @@
 package com.womansday.api.controller;
 
+import com.womansday.api.dto.request.BonusPointsRequest;
 import com.womansday.api.dto.request.CreateTaskRequest;
 import com.womansday.api.dto.request.ResetPasswordRequest;
 import com.womansday.api.dto.request.ReviewRequest;
@@ -78,6 +79,13 @@ public class AdminController {
             @Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(id, request.getNewPassword());
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/users/{id}/bonus")
+    public ResponseEntity<UserResponse> setBonusPoints(
+            @PathVariable Long id,
+            @Valid @RequestBody BonusPointsRequest request) {
+        return ResponseEntity.ok(userService.setBonusPoints(id, request.getBonusPoints()));
     }
 
     @GetMapping("/media/export")

@@ -59,6 +59,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         user.setHidden(true);
         userRepository.save(user);
+        log.info("User hidden: userId={}", userId);
         return toUserResponse(user, Role.ADMIN, new HashMap<>());
     }
 
@@ -69,6 +70,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         user.setHidden(false);
         userRepository.save(user);
+        log.info("User revealed: userId={}", userId);
         return toUserResponse(user, Role.ADMIN, new HashMap<>());
     }
 
@@ -77,16 +79,7 @@ public class UserService {
     public MeResponse getMe(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
-
-        long balance = submissionRepository.sumApprovedRewardsByUserId(userId);
-
-        return MeResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .balance(balance)
-                .hasAvatar(user.getAvatarPath() != null)
-                .build();
+        return toMeResponse(user);
     }
 
     @Transactional
@@ -106,16 +99,7 @@ public class UserService {
         }
 
         userRepository.save(user);
-
-        long balance = submissionRepository.sumApprovedRewardsByUserId(userId);
-
-        return MeResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .balance(balance)
-                .hasAvatar(user.getAvatarPath() != null)
-                .build();
+        return toMeResponse(user);
     }
 
     @Transactional
@@ -174,11 +158,40 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
     }
 
+    @Transactional
+    @SuppressWarnings("null")
+    public UserResponse setBonusPoints(Long userId, int bonusPoints) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+        user.setBonusPoints(bonusPoints);
+        userRepository.save(user);
+        log.info("Bonus points set: userId={}, bonusPoints={}", userId, bonusPoints);
+        return toUserResponse(user, Role.ADMIN, new HashMap<>());
+    }
+
+    long calculateBalance(Long userId, User user) {
+        long submissionRewards = submissionRepository.sumApprovedRewardsByUserId(userId);
+        int bonus = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
+        return submissionRewards + bonus;
+    }
+
+    private MeResponse toMeResponse(User user) {
+        return MeResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .balance(calculateBalance(user.getId(), user))
+                .hasAvatar(user.getAvatarPath() != null)
+                .build();
+    }
+
     private UserResponse toUserResponse(User user, Role callerRole, Map<Long, Long> earnedMap) {
         Long earned = null;
         Boolean hidden = null;
         if (callerRole == Role.ADMIN) {
-            earned = earnedMap.getOrDefault(user.getId(), 0L);
+            long submissionEarned = earnedMap.getOrDefault(user.getId(), 0L);
+            int bonus = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
+            earned = submissionEarned + bonus;
             hidden = Boolean.TRUE.equals(user.getHidden());
         }
 

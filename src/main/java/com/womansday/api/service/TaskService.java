@@ -401,14 +401,16 @@ public class TaskService {
         List<User> users = callerRole == Role.ADMIN
                 ? userRepository.findByRoleNot(Role.ADMIN)
                 : userRepository.findVisibleByRoleNot(Role.ADMIN);
-        List<LeaderboardEntry> entries = new ArrayList<>();
 
+        Map<Long, Long> earnedMap = new HashMap<>();
+        for (Object[] row : submissionRepository.sumApprovedRewardsGroupedByUser()) {
+            earnedMap.put((Long) row[0], (Long) row[1]);
+        }
+
+        List<LeaderboardEntry> entries = new ArrayList<>();
         for (User user : users) {
-            long earned = submissionRepository
-                    .findByParticipantAndStatusWithTaskAndParticipants(user.getId(), SubmissionStatus.APPROVED)
-                    .stream()
-                    .mapToLong(s -> s.getEarnedReward() != null ? s.getEarnedReward() : s.getTask().getReward())
-                    .sum();
+            long submissionEarned = earnedMap.getOrDefault(user.getId(), 0L);
+            int bonus = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
 
             entries.add(LeaderboardEntry.builder()
                     .userId(user.getId())
@@ -416,7 +418,7 @@ public class TaskService {
                     .lastName(user.getLastName())
                     .department(user.getDepartment())
                     .hasAvatar(user.getAvatarPath() != null)
-                    .earned(earned)
+                    .earned(submissionEarned + bonus)
                     .hidden(Boolean.TRUE.equals(user.getHidden()))
                     .build());
         }
