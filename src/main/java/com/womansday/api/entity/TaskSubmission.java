@@ -48,7 +48,7 @@ public class TaskSubmission {
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<SubmissionPhoto> photos = new ArrayList<>();
+    private List<SubmissionMedia> mediaFiles = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -4,7 +4,7 @@ import com.womansday.api.dto.request.UpdateProfileRequest;
 import com.womansday.api.dto.response.*;
 import com.womansday.api.entity.User;
 import com.womansday.api.security.SecurityUtils;
-import com.womansday.api.service.PhotoStorageService;
+import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class UserController {
 
     private final UserService userService;
     private final TaskService taskService;
-    private final PhotoStorageService photoStorageService;
+    private final MediaStorageService mediaStorageService;
 
     @GetMapping("/me")
     public ResponseEntity<MeResponse> getMe(Authentication authentication) {
@@ -67,7 +67,7 @@ public class UserController {
         }
 
         try {
-            byte[] data = photoStorageService.loadByKey(user.getAvatarPath());
+            byte[] data = mediaStorageService.loadByKey(user.getAvatarPath());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, user.getAvatarContentType())
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")

@@ -100,7 +100,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleMultipart(MultipartException e) {
         log.warn("Multipart error: {}", e.getMessage());
         return buildResponse(HttpStatus.BAD_REQUEST,
-                "Некорректный multipart-запрос. Не задавайте Content-Type вручную — используйте Body → form-data и добавьте файл с нужным ключом (avatar / photos).");
+                "Некорректный multipart-запрос. Не задавайте Content-Type вручную — используйте Body → form-data и добавьте файл с нужным ключом (avatar / media).");
     }
 
     @ExceptionHandler(SecurityException.class)

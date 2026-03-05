@@ -3,9 +3,9 @@ package com.womansday.api.controller;
 import com.womansday.api.dto.response.BudgetResponse;
 import com.womansday.api.dto.response.SubmissionResponse;
 import com.womansday.api.dto.response.TaskResponse;
-import com.womansday.api.entity.SubmissionPhoto;
+import com.womansday.api.entity.SubmissionMedia;
 import com.womansday.api.security.SecurityUtils;
-import com.womansday.api.service.PhotoStorageService;
+import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +29,7 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
-    private final PhotoStorageService photoStorageService;
+    private final MediaStorageService mediaStorageService;
 
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAllTasks(Authentication authentication) {
@@ -90,10 +90,10 @@ public class TaskController {
         Long userId = SecurityUtils.extractUserId(authentication);
         String role = SecurityUtils.extractRoleString(authentication);
 
-        SubmissionPhoto file = taskService.getPhoto(fileId, userId, role);
+        SubmissionMedia file = taskService.getMediaFile(fileId, userId, role);
 
         try {
-            Path path = photoStorageService.resolvePathByKey(file.getFilePath());
+            Path path = mediaStorageService.resolvePathByKey(file.getFilePath());
             Resource resource = new UrlResource(path.toUri());
 
             return ResponseEntity.ok()

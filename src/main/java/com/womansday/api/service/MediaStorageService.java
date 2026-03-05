@@ -15,7 +15,7 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 @Service
-public class PhotoStorageService {
+public class MediaStorageService {
 
     private static final Map<String, String> IMAGE_MIME_TO_EXT = Map.ofEntries(
             Map.entry("image/jpeg", "jpg"),

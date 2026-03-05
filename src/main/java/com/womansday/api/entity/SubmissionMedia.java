@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SubmissionPhoto {
+public class SubmissionMedia {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

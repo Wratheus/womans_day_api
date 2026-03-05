@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
     private final TaskSubmissionRepository submissionRepository;
-    private final PhotoStorageService photoStorageService;
+    private final MediaStorageService mediaStorageService;
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers(Role callerRole) {
@@ -131,11 +131,11 @@ public class UserService {
 
         try {
             if (user.getAvatarPath() != null) {
-                photoStorageService.deleteByKey(user.getAvatarPath());
+                mediaStorageService.deleteByKey(user.getAvatarPath());
             }
 
             try (InputStream in = avatar.getInputStream()) {
-                String path = photoStorageService.storeAvatar(userId, contentType, in);
+                String path = mediaStorageService.storeAvatar(userId, contentType, in);
                 user.setAvatarPath(path);
                 user.setAvatarContentType(contentType);
                 userRepository.save(user);
@@ -158,7 +158,7 @@ public class UserService {
         }
 
         try {
-            photoStorageService.deleteByKey(user.getAvatarPath());
+            mediaStorageService.deleteByKey(user.getAvatarPath());
         } catch (IOException ignored) {
         }
 

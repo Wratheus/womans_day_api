@@ -33,9 +33,9 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskSubmissionRepository submissionRepository;
-    private final SubmissionPhotoRepository photoRepository;
+    private final SubmissionMediaRepository mediaRepository;
     private final UserRepository userRepository;
-    private final PhotoStorageService photoStorageService;
+    private final MediaStorageService mediaStorageService;
 
     @Transactional(readOnly = true)
     public List<TaskResponse> getAllTasks(Long userId) {
@@ -143,17 +143,17 @@ public class TaskService {
                 }
 
                 try (InputStream in = file.getInputStream()) {
-                    String filePath = photoStorageService.storeSubmissionFile(
+                    String filePath = mediaStorageService.storeSubmissionFile(
                             submission.getId(), contentType, in);
 
-                    SubmissionPhoto fileEntity = SubmissionPhoto.builder()
+                    SubmissionMedia fileEntity = SubmissionMedia.builder()
                             .submission(submission)
                             .filePath(filePath)
                             .contentType(contentType)
                             .build();
 
-                    photoRepository.save(fileEntity);
-                    submission.getPhotos().add(fileEntity);
+                    mediaRepository.save(fileEntity);
+                    submission.getMediaFiles().add(fileEntity);
 
                 } catch (IOException e) {
                     throw new BusinessLogicException("Ошибка загрузки файла");
@@ -201,7 +201,7 @@ public class TaskService {
             if (Boolean.TRUE.equals(submission.getTask().getCollaborative())
                     && submission.getParticipants().size() < 2) {
                 submission.setStatus(SubmissionStatus.CANCELLED);
-                deleteSubmissionPhotos(submission);
+                deleteSubmissionMedia(submission);
             } else {
                 submission.setStatus(SubmissionStatus.PENDING);
             }
@@ -232,7 +232,7 @@ public class TaskService {
             if (Boolean.TRUE.equals(submission.getTask().getCollaborative())
                     && submission.getParticipants().size() < 2) {
                 submission.setStatus(SubmissionStatus.CANCELLED);
-                deleteSubmissionPhotos(submission);
+                deleteSubmissionMedia(submission);
             } else {
                 submission.setStatus(SubmissionStatus.PENDING);
             }
@@ -255,7 +255,7 @@ public class TaskService {
 
         if (!approved) {
             submission.getPendingParticipants().clear();
-            deleteSubmissionPhotos(submission);
+            deleteSubmissionMedia(submission);
         }
 
         submissionRepository.save(submission);
@@ -296,13 +296,13 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public SubmissionPhoto getPhoto(Long photoId, Long userId, String role) {
+    public SubmissionMedia getMediaFile(Long mediaId, Long userId, String role) {
         if (Role.ADMIN.name().equals(role)) {
-            return photoRepository.findById(photoId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Фото не найдено"));
+            return mediaRepository.findById(mediaId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Медиафайл не найден"));
         }
-        return photoRepository.findByIdAndParticipant(photoId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Фото не найдено"));
+        return mediaRepository.findByIdAndParticipant(mediaId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Медиафайл не найден"));
     }
 
     // --- Admin Task CRUD ---
@@ -370,7 +370,7 @@ public class TaskService {
 
         submission.setStatus(SubmissionStatus.CANCELLED);
         submission.getPendingParticipants().clear();
-        deleteSubmissionPhotos(submission);
+        deleteSubmissionMedia(submission);
         submissionRepository.save(submission);
     }
 
@@ -429,12 +429,12 @@ public class TaskService {
 
     // --- Helpers ---
 
-    private void deleteSubmissionPhotos(TaskSubmission submission) {
+    private void deleteSubmissionMedia(TaskSubmission submission) {
         /// do not delete orphans yet
         return;
-        // for (SubmissionPhoto photo : submission.getPhotos()) {
+        // for (SubmissionMedia media : submission.getMediaFiles()) {
         //     try {
-        //         photoStorageService.deleteByKey(photo.getFilePath());
+        //         mediaStorageService.deleteByKey(media.getFilePath());
         //     } catch (IOException ignored) {
         //     }
         // }
@@ -537,8 +537,8 @@ public class TaskService {
                 .text(submission.getText())
                 .adminComment(submission.getAdminComment())
                 .createdAtEpoch(submission.getCreatedAtEpoch())
-                .fileIds(submission.getPhotos().stream()
-                        .map(SubmissionPhoto::getId)
+                .fileIds(submission.getMediaFiles().stream()
+                        .map(SubmissionMedia::getId)
                         .collect(Collectors.toList()))
                 .build();
     }
@@ -578,8 +578,8 @@ public class TaskService {
                 .text(submission.getText())
                 .adminComment(submission.getAdminComment())
                 .createdAtEpoch(submission.getCreatedAtEpoch())
-                .fileIds(submission.getPhotos().stream()
-                        .map(SubmissionPhoto::getId)
+                .fileIds(submission.getMediaFiles().stream()
+                        .map(SubmissionMedia::getId)
                         .collect(Collectors.toList()))
                 .build();
     }
