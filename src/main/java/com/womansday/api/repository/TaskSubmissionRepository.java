@@ -18,7 +18,7 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
                         "s.createdAtEpoch ASC")
         List<TaskSubmission> findAllOrderByStatusAndCreatedAtEpoch();
 
-        @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId AND s.task.id = :taskId ORDER BY s.createdAtEpoch DESC")
+        @Query("SELECT s FROM TaskSubmission s JOIN s.participants p WHERE p.id = :userId AND s.task.id = :taskId AND s.status NOT IN ('CANCELLED', 'REJECTED') ORDER BY s.createdAtEpoch DESC")
         List<TaskSubmission> findByParticipantAndTaskId(@Param("userId") Long userId, @Param("taskId") Long taskId);
 
         @Query("SELECT s FROM TaskSubmission s JOIN s.pendingParticipants pp WHERE pp.id = :userId AND s.task.id = :taskId ORDER BY s.createdAtEpoch DESC")
