@@ -112,7 +112,7 @@ public class MediaStorageService {
         try (ZipOutputStream zos = new ZipOutputStream(out)) {
             zos.setLevel(1);
 
-            // 1) Одобренные файлы с понятными именами
+            // 1) Одобренные файлы — папка по заданию, имя по автору
             for (SubmissionMedia media : mediaList) {
                 knownPaths.add(media.getFilePath());
 
@@ -129,14 +129,14 @@ public class MediaStorageService {
                 String date = DATE_FMT.format(Instant.ofEpochMilli(submission.getCreatedAtEpoch()));
                 String ext = getExtension(media.getFilePath());
 
-                String baseName = sanitize(task.getTitle())
-                        + "_" + sanitize(submitter.getLastName() + submitter.getFirstName())
+                String folder = sanitize(task.getTitle());
+                String fileName = sanitize(submitter.getLastName() + "_" + submitter.getFirstName())
                         + "_" + date;
 
-                String entryName = baseName + "." + ext;
+                String entryName = folder + "/" + fileName + "." + ext;
                 int counter = 1;
                 while (usedNames.contains(entryName)) {
-                    entryName = baseName + "_" + counter + "." + ext;
+                    entryName = folder + "/" + fileName + "_" + counter + "." + ext;
                     counter++;
                 }
                 usedNames.add(entryName);
