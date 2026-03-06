@@ -10,7 +10,11 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "task_submissions")
+@Table(name = "task_submissions", indexes = {
+    @Index(name = "idx_ts_task_status", columnList = "task_id, status"),
+    @Index(name = "idx_ts_submitter_id", columnList = "submitter_id"),
+    @Index(name = "idx_ts_status_created", columnList = "status, created_at_epoch")
+})
 @Getter
 @Setter
 @NoArgsConstructor

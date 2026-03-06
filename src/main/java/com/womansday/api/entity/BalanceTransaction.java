@@ -5,7 +5,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "balance_transactions")
+@Table(name = "balance_transactions", indexes = {
+    @Index(name = "idx_bt_user_id", columnList = "user_id"),
+    @Index(name = "idx_bt_type_ref", columnList = "type, reference_id"),
+    @Index(name = "idx_bt_type_ref_user", columnList = "type, reference_id, user_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor

@@ -6,7 +6,9 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "revoked_tokens")
+@Table(name = "revoked_tokens", indexes = {
+    @Index(name = "idx_rt_expires_at", columnList = "expires_at")
+})
 @Getter
 @Setter
 @NoArgsConstructor
