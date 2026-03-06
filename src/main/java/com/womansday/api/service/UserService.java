@@ -148,20 +148,20 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse setBonusPoints(Long userId, int bonusPoints) {
+    public UserResponse addBonus(Long userId, int amount) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
-        if (bonusPoints != 0) {
+        if (amount != 0) {
             balanceTransactionRepository.save(BalanceTransaction.builder()
                     .user(user)
                     .type(TransactionType.BONUS)
-                    .amount(bonusPoints)
+                    .amount(amount)
                     .description("Бонус от администратора")
                     .build());
         }
 
-        log.info("Bonus points added: userId={}, amount={}", userId, bonusPoints);
+        log.info("Bonus added: userId={}, amount={}", userId, amount);
         return toUserResponse(user, Role.ADMIN);
     }
 

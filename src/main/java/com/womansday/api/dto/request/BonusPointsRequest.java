@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class BonusPointsRequest {
 
-    @NotNull(message = "Количество бонусных баллов обязательно")
-    private Integer bonusPoints;
+    @NotNull(message = "Сумма бонуса обязательна")
+    private Integer amount;
 }

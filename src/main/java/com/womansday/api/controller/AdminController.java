@@ -96,10 +96,10 @@ public class AdminController {
     }
 
     @PatchMapping("/users/{id}/bonus")
-    public ResponseEntity<UserResponse> setBonusPoints(
+    public ResponseEntity<UserResponse> addBonus(
             @PathVariable Long id,
             @Valid @RequestBody BonusPointsRequest request) {
-        return ResponseEntity.ok(userService.setBonusPoints(id, request.getBonusPoints()));
+        return ResponseEntity.ok(userService.addBonus(id, request.getAmount()));
     }
 
     @GetMapping("/tasks/{id}/stats")
