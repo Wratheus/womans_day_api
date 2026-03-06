@@ -38,6 +38,12 @@ public class AdminController {
         return ResponseEntity.ok(taskService.getAdminSubmissions(status));
     }
 
+    @PatchMapping("/submissions/{submissionId}/cancel")
+    public ResponseEntity<Void> cancelSubmission(@PathVariable Long submissionId) {
+        taskService.adminCancelSubmission(submissionId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/submissions/{submissionId}/review")
     public ResponseEntity<AdminSubmissionResponse> reviewSubmission(
             @PathVariable Long submissionId,

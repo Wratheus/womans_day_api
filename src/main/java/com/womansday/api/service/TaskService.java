@@ -359,6 +359,23 @@ public class TaskService {
     // --- Cancel Submission ---
 
     @Transactional
+    public void adminCancelSubmission(Long submissionId) {
+        TaskSubmission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
+
+        if (submission.getStatus() != SubmissionStatus.PENDING
+                && submission.getStatus() != SubmissionStatus.WAITING_FOR_PARTICIPANTS) {
+            throw new BusinessLogicException("Это выполнение нельзя отменить");
+        }
+
+        submission.setStatus(SubmissionStatus.CANCELLED);
+        submission.getPendingParticipants().clear();
+        deleteSubmissionMedia(submission);
+        submissionRepository.save(submission);
+        log.info("Submission cancelled by admin: id={}, taskId={}", submissionId, submission.getTask().getId());
+    }
+
+    @Transactional
     public void cancelSubmission(Long submissionId, Long userId) {
         TaskSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));

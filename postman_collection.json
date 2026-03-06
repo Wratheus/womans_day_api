@@ -492,6 +492,18 @@
 					}
 				},
 				{
+					"name": "Cancel Submission",
+					"request": {
+						"method": "PATCH",
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/submissions/1/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "submissions", "1", "cancel"]
+						},
+						"description": "Cancel a submission stuck in waitingForParticipants or pending. Returns 204."
+					}
+				},
+				{
 					"name": "Create Task",
 					"request": {
 						"method": "POST",
