@@ -415,7 +415,9 @@ public class DataInitializer implements CommandLineRunner {
 
                 fixMissingEarnedRewards();
                 migrateBalanceTransactions();
+                lootBoxService.migrateNullSourceLootBoxes();
                 lootBoxService.giftFirstTaskBonusToEligibleUsers();
+                lootBoxService.giftMilestoneBoxesToEligibleUsers();
         }
 
         private void migrateBalanceTransactions() {

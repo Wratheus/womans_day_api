@@ -1,5 +1,6 @@
 package com.womansday.api.entity;
 
+import com.womansday.api.enums.LootBoxSource;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,10 @@ public class LootBox {
     @Builder.Default
     @Column(nullable = false)
     private Integer cost = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source")
+    private LootBoxSource source;
 
     @Column(name = "prize_amount")
     private Integer prizeAmount;

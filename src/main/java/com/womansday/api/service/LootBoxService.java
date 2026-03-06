@@ -5,6 +5,7 @@ import com.womansday.api.dto.response.LootBoxResponse;
 import com.womansday.api.entity.BalanceTransaction;
 import com.womansday.api.entity.LootBox;
 import com.womansday.api.entity.User;
+import com.womansday.api.enums.LootBoxSource;
 import com.womansday.api.enums.Role;
 import com.womansday.api.enums.TransactionType;
 import com.womansday.api.exception.BusinessLogicException;
@@ -17,8 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -53,10 +53,40 @@ public class LootBoxService {
     private final BalanceTransactionRepository balanceTransactionRepository;
     private final UserRepository userRepository;
 
+    @Transactional
+    public int migrateNullSourceLootBoxes() {
+        List<LootBox> nullBoxes = lootBoxRepository.findAllWithNullSource();
+        if (nullBoxes.isEmpty()) {
+            return 0;
+        }
+
+        // Группируем по юзеру, сортируем по дате создания
+        Map<Long, List<LootBox>> byUser = new HashMap<>();
+        for (LootBox box : nullBoxes) {
+            byUser.computeIfAbsent(box.getUser().getId(), k -> new ArrayList<>()).add(box);
+        }
+
+        for (List<LootBox> userBoxes : byUser.values()) {
+            userBoxes.sort(Comparator.comparingLong(LootBox::getCreatedAtEpoch));
+            // Самый старый — FIRST_TASK, остальные — MILESTONE
+            userBoxes.get(0).setSource(LootBoxSource.FIRST_TASK);
+            for (int i = 1; i < userBoxes.size(); i++) {
+                userBoxes.get(i).setSource(LootBoxSource.MILESTONE);
+            }
+        }
+
+        lootBoxRepository.saveAll(nullBoxes);
+        log.info("Migrated {} lootboxes with null source (FIRST_TASK + MILESTONE)", nullBoxes.size());
+        return nullBoxes.size();
+    }
+
     public void checkAndAwardFirstTaskBonus(User user) {
+        if (lootBoxRepository.existsByUserIdAndSource(user.getId(), LootBoxSource.FIRST_TASK)) {
+            return;
+        }
         long taskRewardCount = balanceTransactionRepository.countByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
-        if (taskRewardCount == 1) {
-            lootBoxRepository.save(LootBox.builder().user(user).build());
+        if (taskRewardCount >= 1) {
+            lootBoxRepository.save(LootBox.builder().user(user).source(LootBoxSource.FIRST_TASK).build());
             log.info("First-task bonus lootbox awarded: userId={}", user.getId());
         }
     }
@@ -69,10 +99,10 @@ public class LootBoxService {
         for (User user : users) {
             boolean hasTask = balanceTransactionRepository.countByUserIdAndType(
                     user.getId(), TransactionType.TASK_REWARD) >= 1;
-            boolean hasBox = lootBoxRepository.countByUserId(user.getId()) >= 1;
+            boolean alreadyHas = lootBoxRepository.existsByUserIdAndSource(user.getId(), LootBoxSource.FIRST_TASK);
 
-            if (hasTask && !hasBox) {
-                boxes.add(LootBox.builder().user(user).build());
+            if (hasTask && !alreadyHas) {
+                boxes.add(LootBox.builder().user(user).source(LootBoxSource.FIRST_TASK).build());
             }
         }
 
@@ -86,17 +116,40 @@ public class LootBoxService {
     public void checkAndAwardMilestoneBoxes(User user) {
         long taskEarnings = balanceTransactionRepository.sumByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
         long boxesEarned = taskEarnings / LOOTBOX_MILESTONE;
-        long existingBoxes = lootBoxRepository.countByUserId(user.getId());
-        long toAward = boxesEarned - existingBoxes;
+        long existingMilestoneBoxes = lootBoxRepository.countByUserIdAndSource(user.getId(), LootBoxSource.MILESTONE);
+        long toAward = boxesEarned - existingMilestoneBoxes;
 
         if (toAward > 0) {
             List<LootBox> boxes = new ArrayList<>();
             for (int i = 0; i < toAward; i++) {
-                boxes.add(LootBox.builder().user(user).build());
+                boxes.add(LootBox.builder().user(user).source(LootBoxSource.MILESTONE).build());
             }
             lootBoxRepository.saveAll(boxes);
             log.info("Milestone lootboxes awarded: userId={}, count={}", user.getId(), toAward);
         }
+    }
+
+    @Transactional
+    public int giftMilestoneBoxesToEligibleUsers() {
+        List<User> users = userRepository.findByRoleNot(Role.ADMIN);
+
+        List<LootBox> boxes = new ArrayList<>();
+        for (User user : users) {
+            long taskEarnings = balanceTransactionRepository.sumByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
+            long boxesEarned = taskEarnings / LOOTBOX_MILESTONE;
+            long existingMilestoneBoxes = lootBoxRepository.countByUserIdAndSource(user.getId(), LootBoxSource.MILESTONE);
+            long toAward = boxesEarned - existingMilestoneBoxes;
+
+            for (int i = 0; i < toAward; i++) {
+                boxes.add(LootBox.builder().user(user).source(LootBoxSource.MILESTONE).build());
+            }
+        }
+
+        if (!boxes.isEmpty()) {
+            lootBoxRepository.saveAll(boxes);
+            log.info("Milestone bonus migration: {} lootboxes issued", boxes.size());
+        }
+        return boxes.size();
     }
 
     @Transactional
@@ -154,7 +207,7 @@ public class LootBoxService {
         List<User> users = userRepository.findByRoleNot(Role.ADMIN);
 
         List<LootBox> boxes = users.stream()
-                .map(user -> LootBox.builder().user(user).build())
+                .map(user -> LootBox.builder().user(user).source(LootBoxSource.GIFT).build())
                 .collect(Collectors.toList());
 
         lootBoxRepository.saveAll(boxes);

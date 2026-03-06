@@ -1,6 +1,7 @@
 package com.womansday.api.repository;
 
 import com.womansday.api.entity.LootBox;
+import com.womansday.api.enums.LootBoxSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +16,11 @@ public interface LootBoxRepository extends JpaRepository<LootBox, Long> {
     int countUnopenedByUserId(@Param("userId") Long userId);
 
     long countByUserId(Long userId);
+
+    long countByUserIdAndSource(Long userId, LootBoxSource source);
+
+    boolean existsByUserIdAndSource(Long userId, LootBoxSource source);
+
+    @Query("SELECT lb FROM LootBox lb WHERE lb.source IS NULL")
+    List<LootBox> findAllWithNullSource();
 }
