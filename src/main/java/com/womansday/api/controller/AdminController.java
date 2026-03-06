@@ -6,8 +6,10 @@ import com.womansday.api.dto.request.ResetPasswordRequest;
 import com.womansday.api.dto.request.ReviewRequest;
 import com.womansday.api.dto.request.UpdateTaskRequest;
 import com.womansday.api.dto.response.AdminSubmissionResponse;
+import com.womansday.api.dto.response.LeaderboardEntry;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.dto.response.UserResponse;
+import com.womansday.api.enums.Role;
 import com.womansday.api.service.AuthService;
 import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
@@ -92,6 +94,11 @@ public class AdminController {
             @PathVariable Long id,
             @Valid @RequestBody BonusPointsRequest request) {
         return ResponseEntity.ok(userService.setBonusPoints(id, request.getBonusPoints()));
+    }
+
+    @GetMapping("/leaderboard")
+    public ResponseEntity<List<LeaderboardEntry>> getLeaderboard() {
+        return ResponseEntity.ok(taskService.getLeaderboard(Role.ADMIN));
     }
 
     @GetMapping("/media/export")

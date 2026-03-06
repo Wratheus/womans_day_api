@@ -59,7 +59,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/lootbox/purchase").denyAll()
                         .requestMatchers("/api/admin/users/*/bonus").denyAll()
                         .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers("/api/users/leaderboard").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated())
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

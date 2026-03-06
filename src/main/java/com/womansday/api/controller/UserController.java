@@ -101,9 +101,4 @@ public class UserController {
         Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(lootBoxService.getHistory(userId));
     }
-
-    @GetMapping("/leaderboard")
-    public ResponseEntity<List<LeaderboardEntry>> getLeaderboard(Authentication authentication) {
-        return ResponseEntity.ok(taskService.getLeaderboard(SecurityUtils.extractRole(authentication)));
-    }
 }
