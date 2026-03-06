@@ -116,7 +116,7 @@ public class LootBoxService {
         return boxes.size();
     }
 
-    private static final long MILESTONE_CAP = 2000;
+    private static final long MILESTONE_CAP = 4000;
 
     public void checkAndAwardMilestoneBoxes(User user) {
         long taskEarnings = balanceTransactionRepository.sumByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
