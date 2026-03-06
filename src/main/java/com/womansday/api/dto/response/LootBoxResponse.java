@@ -7,11 +7,10 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class MeResponse {
+public class LootBoxResponse {
     private Long id;
-    private String firstName;
-    private String lastName;
-    private Long balance;
-    private boolean hasAvatar;
-    private Integer unopenedBoxes;
+    private Integer cost;
+    private Integer prizeAmount;
+    private Long openedAtEpoch;
+    private Long createdAtEpoch;
 }

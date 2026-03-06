@@ -1,11 +1,14 @@
 package com.womansday.api.config;
 
+import com.womansday.api.entity.BalanceTransaction;
 import com.womansday.api.entity.Task;
 import com.womansday.api.entity.TaskSubmission;
 import com.womansday.api.entity.User;
 import com.womansday.api.enums.Role;
 import com.womansday.api.enums.SubmissionStatus;
 import com.womansday.api.enums.TaskType;
+import com.womansday.api.enums.TransactionType;
+import com.womansday.api.repository.BalanceTransactionRepository;
 import com.womansday.api.repository.TaskRepository;
 import com.womansday.api.repository.TaskSubmissionRepository;
 import com.womansday.api.repository.UserRepository;
@@ -28,6 +31,7 @@ public class DataInitializer implements CommandLineRunner {
         private final TaskRepository taskRepository;
         private final TaskSubmissionRepository submissionRepository;
         private final UserRepository userRepository;
+        private final BalanceTransactionRepository balanceTransactionRepository;
         private final PasswordEncoder passwordEncoder;
 
         @Value("${admin.login}")
@@ -408,6 +412,34 @@ public class DataInitializer implements CommandLineRunner {
                 }
 
                 fixMissingEarnedRewards();
+                migrateBalanceTransactions();
+        }
+
+        private void migrateBalanceTransactions() {
+                List<TaskSubmission> approved = submissionRepository.findAllApprovedWithParticipants();
+
+                int migrated = 0;
+                for (TaskSubmission s : approved) {
+                        int reward = s.getEarnedReward() != null ? s.getEarnedReward() : s.getTask().getReward();
+                        for (User participant : s.getParticipants()) {
+                                if (!balanceTransactionRepository.existsByTypeAndReferenceIdAndUserId(
+                                                TransactionType.TASK_REWARD, s.getId(), participant.getId())) {
+                                        balanceTransactionRepository.save(BalanceTransaction.builder()
+                                                        .user(participant)
+                                                        .type(TransactionType.TASK_REWARD)
+                                                        .amount(reward)
+                                                        .referenceId(s.getId())
+                                                        .description(s.getTask().getTitle())
+                                                        .createdAtEpoch(s.getCreatedAtEpoch())
+                                                        .build());
+                                        migrated++;
+                                }
+                        }
+                }
+
+                if (migrated > 0) {
+                        log.info("Migrated {} balance transactions from approved submissions", migrated);
+                }
         }
 
         private void fixMissingEarnedRewards() {

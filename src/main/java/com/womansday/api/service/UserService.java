@@ -3,11 +3,14 @@ package com.womansday.api.service;
 import com.womansday.api.dto.request.UpdateProfileRequest;
 import com.womansday.api.dto.response.MeResponse;
 import com.womansday.api.dto.response.UserResponse;
+import com.womansday.api.entity.BalanceTransaction;
 import com.womansday.api.entity.User;
 import com.womansday.api.enums.Role;
+import com.womansday.api.enums.TransactionType;
 import com.womansday.api.exception.BusinessLogicException;
 import com.womansday.api.exception.ResourceNotFoundException;
-import com.womansday.api.repository.TaskSubmissionRepository;
+import com.womansday.api.repository.BalanceTransactionRepository;
+import com.womansday.api.repository.LootBoxRepository;
 import com.womansday.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final TaskSubmissionRepository submissionRepository;
+    private final BalanceTransactionRepository balanceTransactionRepository;
+    private final LootBoxRepository lootBoxRepository;
     private final MediaStorageService mediaStorageService;
 
     @Transactional(readOnly = true)
@@ -42,7 +46,7 @@ public class UserService {
 
         Map<Long, Long> earnedMap = new HashMap<>();
         if (callerRole == Role.ADMIN) {
-            for (Object[] row : submissionRepository.sumApprovedRewardsGroupedByUser()) {
+            for (Object[] row : balanceTransactionRepository.sumGroupedByUser()) {
                 earnedMap.put((Long) row[0], (Long) row[1]);
             }
         }
@@ -163,16 +167,24 @@ public class UserService {
     public UserResponse setBonusPoints(Long userId, int bonusPoints) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
-        user.setBonusPoints(bonusPoints);
+
+        if (bonusPoints != 0) {
+            balanceTransactionRepository.save(BalanceTransaction.builder()
+                    .user(user)
+                    .type(TransactionType.BONUS)
+                    .amount(bonusPoints)
+                    .description("Бонус от администратора")
+                    .build());
+        }
+
+        user.setBonusPoints(user.getBonusPoints() + bonusPoints);
         userRepository.save(user);
-        log.info("Bonus points set: userId={}, bonusPoints={}", userId, bonusPoints);
+        log.info("Bonus points added: userId={}, amount={}", userId, bonusPoints);
         return toUserResponse(user, Role.ADMIN, new HashMap<>());
     }
 
-    long calculateBalance(Long userId, User user) {
-        long submissionRewards = submissionRepository.sumApprovedRewardsByUserId(userId);
-        int bonus = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
-        return submissionRewards + bonus;
+    long calculateBalance(Long userId) {
+        return balanceTransactionRepository.sumByUserId(userId);
     }
 
     private MeResponse toMeResponse(User user) {
@@ -180,8 +192,9 @@ public class UserService {
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .balance(calculateBalance(user.getId(), user))
+                .balance(calculateBalance(user.getId()))
                 .hasAvatar(user.getAvatarPath() != null)
+                .unopenedBoxes(lootBoxRepository.countUnopenedByUserId(user.getId()))
                 .build();
     }
 
@@ -189,9 +202,7 @@ public class UserService {
         Long earned = null;
         Boolean hidden = null;
         if (callerRole == Role.ADMIN) {
-            long submissionEarned = earnedMap.getOrDefault(user.getId(), 0L);
-            int bonus = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
-            earned = submissionEarned + bonus;
+            earned = earnedMap.getOrDefault(user.getId(), 0L);
             hidden = Boolean.TRUE.equals(user.getHidden());
         }
 

@@ -7,6 +7,7 @@ import com.womansday.api.entity.*;
 import com.womansday.api.enums.Role;
 import com.womansday.api.enums.SubmissionStatus;
 import com.womansday.api.enums.TaskType;
+import com.womansday.api.enums.TransactionType;
 import com.womansday.api.exception.BusinessLogicException;
 import com.womansday.api.exception.ResourceNotFoundException;
 import com.womansday.api.repository.*;
@@ -36,6 +37,7 @@ public class TaskService {
     private final SubmissionMediaRepository mediaRepository;
     private final UserRepository userRepository;
     private final MediaStorageService mediaStorageService;
+    private final BalanceTransactionRepository balanceTransactionRepository;
 
     @Transactional(readOnly = true)
     public List<TaskResponse> getAllTasks(Long userId) {
@@ -255,14 +257,25 @@ public class TaskService {
 
         if (approved) {
             submission.setEarnedReward(submission.getTask().getReward());
+            submissionRepository.save(submission);
+
+            for (User participant : submission.getParticipants()) {
+                balanceTransactionRepository.save(BalanceTransaction.builder()
+                        .user(participant)
+                        .type(TransactionType.TASK_REWARD)
+                        .amount(submission.getTask().getReward())
+                        .referenceId(submission.getId())
+                        .description(submission.getTask().getTitle())
+                        .build());
+            }
         }
 
         if (!approved) {
             submission.getPendingParticipants().clear();
             deleteSubmissionMedia(submission);
+            submissionRepository.save(submission);
         }
 
-        submissionRepository.save(submission);
         log.info("Submission reviewed: id={}, result={}", submissionId, approved ? "APPROVED" : "REJECTED");
 
         return toAdminSubmissionResponse(submission);
@@ -420,14 +433,13 @@ public class TaskService {
                 : userRepository.findVisibleByRoleNot(Role.ADMIN);
 
         Map<Long, Long> earnedMap = new HashMap<>();
-        for (Object[] row : submissionRepository.sumApprovedRewardsGroupedByUser()) {
+        for (Object[] row : balanceTransactionRepository.sumGroupedByUser()) {
             earnedMap.put((Long) row[0], (Long) row[1]);
         }
 
         List<LeaderboardEntry> entries = new ArrayList<>();
         for (User user : users) {
-            long submissionEarned = earnedMap.getOrDefault(user.getId(), 0L);
-            int bonus = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
+            long earned = earnedMap.getOrDefault(user.getId(), 0L);
 
             entries.add(LeaderboardEntry.builder()
                     .userId(user.getId())
@@ -435,7 +447,7 @@ public class TaskService {
                     .lastName(user.getLastName())
                     .department(user.getDepartment())
                     .hasAvatar(user.getAvatarPath() != null)
-                    .earned(submissionEarned + bonus)
+                    .earned(earned)
                     .hidden(Boolean.TRUE.equals(user.getHidden()))
                     .build());
         }

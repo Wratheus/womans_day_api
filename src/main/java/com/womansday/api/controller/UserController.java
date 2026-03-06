@@ -4,6 +4,7 @@ import com.womansday.api.dto.request.UpdateProfileRequest;
 import com.womansday.api.dto.response.*;
 import com.womansday.api.entity.User;
 import com.womansday.api.security.SecurityUtils;
+import com.womansday.api.service.LootBoxService;
 import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
@@ -27,6 +28,7 @@ public class UserController {
 
     private final UserService userService;
     private final TaskService taskService;
+    private final LootBoxService lootBoxService;
     private final MediaStorageService mediaStorageService;
 
     @GetMapping("/me")
@@ -92,6 +94,12 @@ public class UserController {
     public ResponseEntity<List<SubmissionResponse>> getMyInvitations(Authentication authentication) {
         Long userId = SecurityUtils.extractUserId(authentication);
         return ResponseEntity.ok(taskService.getMyInvitations(userId));
+    }
+
+    @GetMapping("/me/history")
+    public ResponseEntity<List<BalanceHistoryEntry>> getHistory(Authentication authentication) {
+        Long userId = SecurityUtils.extractUserId(authentication);
+        return ResponseEntity.ok(lootBoxService.getHistory(userId));
     }
 
     @GetMapping("/leaderboard")

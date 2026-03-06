@@ -284,6 +284,71 @@
 						},
 						"description": "Admin only. Get user leaderboard sorted by earned points."
 					}
+				},
+				{
+					"name": "Balance History",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/users/me/history",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "me", "history"]
+						},
+						"description": "Get balance transaction history for current user."
+					}
+				}
+			]
+		},
+		{
+			"name": "LootBox",
+			"item": [
+				{
+					"name": "Get My LootBoxes",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/lootbox",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "lootbox"]
+						},
+						"description": "Get all lootboxes for the current user (opened and unopened)."
+					}
+				},
+				{
+					"name": "Get LootBox Cost",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/lootbox/cost",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "lootbox", "cost"]
+						},
+						"description": "Get the current cost of a lootbox in tulips."
+					}
+				},
+				{
+					"name": "Purchase LootBox",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/lootbox/purchase",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "lootbox", "purchase"]
+						},
+						"description": "Buy a lootbox for tulips. Returns 201 with the new lootbox."
+					}
+				},
+				{
+					"name": "Open LootBox",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/lootbox/1/open",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "lootbox", "1", "open"]
+						},
+						"description": "Open a lootbox to reveal the prize (tulips amount)."
+					}
 				}
 			]
 		},
