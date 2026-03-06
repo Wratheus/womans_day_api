@@ -67,18 +67,19 @@ public class LootBoxService {
 
         List<LootBox> boxes = new ArrayList<>();
         for (User user : users) {
-            long taskRewardCount = balanceTransactionRepository.countByUserIdAndType(
-                    user.getId(), TransactionType.TASK_REWARD);
-            if (taskRewardCount >= 1) {
+            boolean hasTask = balanceTransactionRepository.countByUserIdAndType(
+                    user.getId(), TransactionType.TASK_REWARD) >= 1;
+            boolean hasBox = lootBoxRepository.countByUserId(user.getId()) >= 1;
+
+            if (hasTask && !hasBox) {
                 boxes.add(LootBox.builder().user(user).build());
             }
         }
 
         if (!boxes.isEmpty()) {
             lootBoxRepository.saveAll(boxes);
+            log.info("First-task bonus migration: {} lootboxes issued", boxes.size());
         }
-
-        log.info("First-task bonus migration: {} lootboxes issued", boxes.size());
         return boxes.size();
     }
 

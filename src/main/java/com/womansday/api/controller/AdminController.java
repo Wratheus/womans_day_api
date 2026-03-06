@@ -110,13 +110,6 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("gifted", count));
     }
 
-    /** One-time migration: give 1 lootbox to every non-admin user who has ≥1 completed task. */
-    @PostMapping("/lootbox/first-task-gift")
-    public ResponseEntity<Map<String, Integer>> giftFirstTaskBonus() {
-        int count = lootBoxService.giftFirstTaskBonusToEligibleUsers();
-        return ResponseEntity.ok(Map.of("gifted", count));
-    }
-
     @GetMapping("/media/export")
     public void exportMedia(HttpServletResponse response) throws Exception {
         response.setContentType("application/zip");

@@ -12,6 +12,7 @@ import com.womansday.api.repository.BalanceTransactionRepository;
 import com.womansday.api.repository.TaskRepository;
 import com.womansday.api.repository.TaskSubmissionRepository;
 import com.womansday.api.repository.UserRepository;
+import com.womansday.api.service.LootBoxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ public class DataInitializer implements CommandLineRunner {
         private final UserRepository userRepository;
         private final BalanceTransactionRepository balanceTransactionRepository;
         private final PasswordEncoder passwordEncoder;
+        private final LootBoxService lootBoxService;
 
         @Value("${admin.login}")
         private String adminLogin;
@@ -413,6 +415,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 fixMissingEarnedRewards();
                 migrateBalanceTransactions();
+                lootBoxService.giftFirstTaskBonusToEligibleUsers();
         }
 
         private void migrateBalanceTransactions() {
