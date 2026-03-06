@@ -56,7 +56,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         // .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/lootbox/purchase").denyAll()
                         .requestMatchers("/api/admin/users/*/bonus").denyAll()
                         .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated())
