@@ -14,6 +14,5 @@ public class UserResponse {
     private String lastName;
     private String department;
     private boolean hasAvatar;
-    private Long earned;
     private Boolean hidden;
 }

@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,15 +43,8 @@ public class UserService {
             users = userRepository.findVisibleByRoleNot(Role.ADMIN);
         }
 
-        Map<Long, Long> earnedMap = new HashMap<>();
-        if (callerRole == Role.ADMIN) {
-            for (Object[] row : balanceTransactionRepository.sumGroupedByUser()) {
-                earnedMap.put((Long) row[0], (Long) row[1]);
-            }
-        }
-
         return users.stream()
-                .map(u -> toUserResponse(u, callerRole, earnedMap))
+                .map(u -> toUserResponse(u, callerRole))
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +56,7 @@ public class UserService {
         user.setHidden(true);
         userRepository.save(user);
         log.info("User hidden: userId={}", userId);
-        return toUserResponse(user, Role.ADMIN, new HashMap<>());
+        return toUserResponse(user, Role.ADMIN);
     }
 
     @Transactional
@@ -75,7 +67,7 @@ public class UserService {
         user.setHidden(false);
         userRepository.save(user);
         log.info("User revealed: userId={}", userId);
-        return toUserResponse(user, Role.ADMIN, new HashMap<>());
+        return toUserResponse(user, Role.ADMIN);
     }
 
     @Transactional(readOnly = true)
@@ -180,7 +172,7 @@ public class UserService {
         user.setBonusPoints(user.getBonusPoints() + bonusPoints);
         userRepository.save(user);
         log.info("Bonus points added: userId={}, amount={}", userId, bonusPoints);
-        return toUserResponse(user, Role.ADMIN, new HashMap<>());
+        return toUserResponse(user, Role.ADMIN);
     }
 
     long calculateBalance(Long userId) {
@@ -198,14 +190,7 @@ public class UserService {
                 .build();
     }
 
-    private UserResponse toUserResponse(User user, Role callerRole, Map<Long, Long> earnedMap) {
-        Long earned = null;
-        Boolean hidden = null;
-        if (callerRole == Role.ADMIN) {
-            earned = earnedMap.getOrDefault(user.getId(), 0L);
-            hidden = Boolean.TRUE.equals(user.getHidden());
-        }
-
+    private UserResponse toUserResponse(User user, Role callerRole) {
         return UserResponse.builder()
                 .id(user.getId())
                 .login(user.getLogin())
@@ -213,8 +198,7 @@ public class UserService {
                 .lastName(user.getLastName())
                 .department(user.getDepartment())
                 .hasAvatar(user.getAvatarPath() != null)
-                .earned(earned)
-                .hidden(hidden)
+                .hidden(callerRole == Role.ADMIN ? Boolean.TRUE.equals(user.getHidden()) : null)
                 .build();
     }
 
