@@ -8,6 +8,7 @@ import com.womansday.api.dto.request.UpdateTaskRequest;
 import com.womansday.api.dto.response.AdminSubmissionResponse;
 import com.womansday.api.dto.response.LeaderboardEntry;
 import com.womansday.api.dto.response.TaskResponse;
+import com.womansday.api.dto.response.TaskStatsResponse;
 import com.womansday.api.dto.response.UserResponse;
 import com.womansday.api.enums.Role;
 import com.womansday.api.service.AuthService;
@@ -97,6 +98,11 @@ public class AdminController {
             @PathVariable Long id,
             @Valid @RequestBody BonusPointsRequest request) {
         return ResponseEntity.ok(userService.setBonusPoints(id, request.getBonusPoints()));
+    }
+
+    @GetMapping("/tasks/{id}/stats")
+    public ResponseEntity<TaskStatsResponse> getTaskStats(@PathVariable Long id) {
+        return ResponseEntity.ok(taskService.getTaskStats(id));
     }
 
     @GetMapping("/leaderboard")

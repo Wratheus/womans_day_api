@@ -1,7 +1,7 @@
 {
 	"info": {
 		"name": "WomansDay API",
-		"description": "Corporate March 8th event API.\n\n## Auth\nRegister or Login to get tokens. Tokens are auto-saved to collection variables.\n\n## Response Models\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"role\": \"user\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"balance\": 1500,\n  \"hasAvatar\": true\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"earned\": 1500\n}\n```\n\n### TaskResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"photo\",\n  \"collaborative\": true,\n  \"myStatus\": \"pending\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Maria\",\n  \"submitterLastName\": \"Ivanova\",\n  \"submitterDepartment\": \"Accounting\",\n  \"participants\": [UserResponse],\n  \"pendingParticipants\": [UserResponse],\n  \"status\": \"pending\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": 1741428600000,\n  \"photoIds\": [1, 2]\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 12500,\n  \"approvedBudget\": 3200\n}\n```\n\n### Error Response\n```json\n{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Login is already taken\"\n}\n```\n\n## Statuses\n- `notStarted` — user has not submitted\n- `waitingForParticipants` — waiting for invited participants\n- `invited` — user has a pending invitation\n- `pending` — awaiting admin review\n- `approved` — approved by admin\n- `rejected` — rejected by admin\n- `cancelled` — all participants declined",
+		"description": "Corporate March 8th event API.\n\n## Auth\nRegister or Login to get tokens. Tokens are auto-saved to collection variables.\n\n## Response Models\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"role\": \"user\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"balance\": 1500,\n  \"hasAvatar\": true,\n  \"unopenedBoxes\": 2\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"hidden\": false\n}\n```\n_Note: `hidden` is only present for admin callers._\n\n### TaskResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"MEDIA\",\n  \"collaborative\": true,\n  \"myStatus\": \"pending\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Maria\",\n  \"submitterLastName\": \"Ivanova\",\n  \"submitterDepartment\": \"Accounting\",\n  \"participants\": [UserResponse],\n  \"pendingParticipants\": [UserResponse],\n  \"status\": \"pending\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": 1741428600000,\n  \"fileIds\": [1, 2]\n}\n```\n\n### LootBoxResponse\n```json\n{\n  \"id\": 1,\n  \"prizeAmount\": 50,\n  \"openedAtEpoch\": 1741428600000,\n  \"createdAtEpoch\": 1741400000000\n}\n```\n_Note: `prizeAmount` is null for unopened boxes._\n\n### TaskStatsResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 50,\n  \"type\": \"MEDIA\",\n  \"collaborative\": false,\n  \"completedSubmissionsCount\": 4,\n  \"completedUsersCount\": 5,\n  \"completedSubmissions\": [\n    {\n      \"submissionId\": 12,\n      \"earnedReward\": 50,\n      \"createdAtEpoch\": 1741200000000,\n      \"participants\": [UserResponse]\n    }\n  ]\n}\n```\n\n### LeaderboardEntry\n```json\n{\n  \"userId\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"earned\": 1500,\n  \"rank\": 1,\n  \"hidden\": false\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 50000,\n  \"approvedBudget\": 3200\n}\n```\n\n### Error Response\n```json\n{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Login is already taken\"\n}\n```\n\n## Statuses\n- `notStarted` — user has not submitted\n- `waitingForParticipants` — waiting for invited participants\n- `invited` — user has a pending invitation\n- `pending` — awaiting admin review\n- `approved` — approved by admin\n- `rejected` — rejected by admin\n- `cancelled` — all participants declined\n\n## LootBox Rules\n- 1 box given automatically on first completed task\n- 1 box given for every 150 tulips earned from tasks\n- Prize tiers (EV ≈ 23.5): 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -173,7 +173,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users", "me"]
 						},
-						"description": "Get current user profile (balance, avatar status)."
+						"description": "Get current user profile: id, name, department, balance, hasAvatar, unopenedBoxes."
 					}
 				},
 				{
@@ -246,7 +246,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users"]
 						},
-						"description": "Admin sees all users with `earned` field. Regular users see only non-admin users without `earned`."
+						"description": "Regular users see only non-hidden non-admin users. Admin sees all users including hidden ones (with `hidden` field)."
 					}
 				},
 				{
@@ -258,7 +258,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users", "me", "submissions"]
 						},
-						"description": "Get all submissions created by the current user."
+						"description": "Get all submissions where the current user is a participant."
 					}
 				},
 				{
@@ -270,19 +270,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users", "me", "invitations"]
 						},
-						"description": "Get all collaborative submissions where the current user is invited."
-					}
-				},
-				{
-					"name": "Leaderboard",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/users/leaderboard",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "leaderboard"]
-						},
-						"description": "Admin only. Get user leaderboard sorted by earned points."
+						"description": "Get all collaborative submissions where the current user is invited (status: waitingForParticipants)."
 					}
 				},
 				{
@@ -294,60 +282,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users", "me", "history"]
 						},
-						"description": "Get balance transaction history for current user."
-					}
-				}
-			]
-		},
-		{
-			"name": "LootBox",
-			"item": [
-				{
-					"name": "Get My LootBoxes",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/lootbox",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "lootbox"]
-						},
-						"description": "Get all lootboxes for the current user (opened and unopened)."
-					}
-				},
-				{
-					"name": "Get LootBox Cost",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/lootbox/cost",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "lootbox", "cost"]
-						},
-						"description": "Get the current cost of a lootbox in tulips."
-					}
-				},
-				{
-					"name": "Purchase LootBox",
-					"request": {
-						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/lootbox/purchase",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "lootbox", "purchase"]
-						},
-						"description": "Buy a lootbox for tulips. Returns 201 with the new lootbox."
-					}
-				},
-				{
-					"name": "Open LootBox",
-					"request": {
-						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/lootbox/1/open",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "lootbox", "1", "open"]
-						},
-						"description": "Open a lootbox to reveal the prize (tulips amount)."
+						"description": "Get balance transaction history for current user. Types: taskReward, bonus, lootboxPrize."
 					}
 				}
 			]
@@ -458,7 +393,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "tasks", "submissions", "1"]
 						},
-						"description": "Cancel own submission (submitter only)."
+						"description": "Cancel own submission (submitter only). Allowed when status is pending or waitingForParticipants."
 					}
 				},
 				{
@@ -488,209 +423,299 @@
 			]
 		},
 		{
+			"name": "LootBox",
+			"item": [
+				{
+					"name": "Get My LootBoxes",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/lootbox",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "lootbox"]
+						},
+						"description": "Get all lootboxes for the current user (opened and unopened), sorted by createdAtEpoch desc. Unopened boxes have `prizeAmount: null`."
+					}
+				},
+				{
+					"name": "Open LootBox",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/lootbox/1/open",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "lootbox", "1", "open"]
+						},
+						"description": "Open a lootbox to reveal the prize. Prize tiers: 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%). EV ≈ 23.5 tulips."
+					}
+				}
+			]
+		},
+		{
 			"name": "Admin",
 			"description": "All endpoints require ADMIN role.",
 			"item": [
 				{
-					"name": "Get All Submissions",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/submissions",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "submissions"]
+					"name": "Submissions",
+					"item": [
+						{
+							"name": "Get All Submissions",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/submissions",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "submissions"]
+								},
+								"description": "Get all submissions sorted by status (PENDING first), then createdAtEpoch asc."
+							}
 						},
-						"description": "Get all submissions. Optional filter: ?status=PENDING|APPROVED|REJECTED|WAITING_FOR_PARTICIPANTS|CANCELLED"
-					}
+						{
+							"name": "Get Submissions by Status",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/submissions?status=PENDING",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "submissions"],
+									"query": [
+										{ "key": "status", "value": "PENDING", "description": "PENDING | APPROVED | REJECTED | WAITING_FOR_PARTICIPANTS | CANCELLED" }
+									]
+								},
+								"description": "Filter submissions by status."
+							}
+						},
+						{
+							"name": "Approve Submission",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"approved\": true,\n  \"comment\": \"Great job!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/submissions/1/review",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "submissions", "1", "review"]
+								},
+								"description": "Approve a submission. Tulips are credited to all participants. Lootboxes are awarded automatically (first task bonus + milestones)."
+							}
+						},
+						{
+							"name": "Reject Submission",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"approved\": false,\n  \"comment\": \"Please redo\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/submissions/1/review",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "submissions", "1", "review"]
+								},
+								"description": "Reject a submission with an optional comment."
+							}
+						},
+						{
+							"name": "Cancel Submission",
+							"request": {
+								"method": "PATCH",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/submissions/1/cancel",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "submissions", "1", "cancel"]
+								},
+								"description": "Cancel a submission stuck in waitingForParticipants or pending. Returns 204."
+							}
+						}
+					]
 				},
 				{
-					"name": "Get Submissions by Status",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/submissions?status=PENDING",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "submissions"],
-							"query": [
-								{ "key": "status", "value": "PENDING" }
-							]
+					"name": "Tasks",
+					"item": [
+						{
+							"name": "Create Task",
+							"request": {
+								"method": "POST",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Team Selfie\",\n  \"description\": \"Take a team selfie in the office\",\n  \"reward\": 50,\n  \"type\": \"MEDIA\",\n  \"collaborative\": true\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/tasks",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "tasks"]
+								},
+								"description": "Create a new task. Type: TEXT | MEDIA | TEXT_AND_MEDIA."
+							}
 						},
-						"description": "Filter submissions by status."
-					}
+						{
+							"name": "Update Task",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Updated Title\",\n  \"description\": \"Updated description\",\n  \"reward\": 75,\n  \"type\": \"MEDIA\",\n  \"collaborative\": false\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/tasks/1",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "tasks", "1"]
+								},
+								"description": "Update an existing task. All fields are optional."
+							}
+						},
+						{
+							"name": "Delete Task",
+							"request": {
+								"method": "DELETE",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/tasks/1",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "tasks", "1"]
+								},
+								"description": "Delete a task. Fails if there are active submissions."
+							}
+						},
+						{
+							"name": "Get Task Stats",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/tasks/1/stats",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "tasks", "1", "stats"]
+								},
+								"description": "Get task info + all approved submissions with participants and earned rewards. Returns completedSubmissionsCount, completedUsersCount and full completedSubmissions list."
+							}
+						}
+					]
 				},
 				{
-					"name": "Approve Submission",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"approved\": true,\n  \"comment\": \"Great job!\"\n}"
+					"name": "Users",
+					"item": [
+						{
+							"name": "Get Leaderboard",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/leaderboard",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "leaderboard"]
+								},
+								"description": "Get all non-admin users sorted by earned tulips descending, including hidden ones. Returns rank, earned, hidden flag."
+							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/submissions/1/review",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "submissions", "1", "review"]
+						{
+							"name": "Hide User",
+							"request": {
+								"method": "PATCH",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/1/hide",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "users", "1", "hide"]
+								},
+								"description": "Hide a user — exclude from public lists and leaderboard."
+							}
 						},
-						"description": "Approve a submission. Optional comment."
-					}
+						{
+							"name": "Reveal User",
+							"request": {
+								"method": "PATCH",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/1/reveal",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "users", "1", "reveal"]
+								},
+								"description": "Unhide a previously hidden user."
+							}
+						},
+						{
+							"name": "Reset User Password",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"newPassword\": \"newpassword123\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/1/reset-password",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "users", "1", "reset-password"]
+								},
+								"description": "Reset any user's password (min 8 chars)."
+							}
+						},
+						{
+							"name": "Set Bonus Points",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"bonusPoints\": 100\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/1/bonus",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "users", "1", "bonus"]
+								},
+								"description": "Add bonus tulips to a user's balance (creates a BONUS transaction)."
+							}
+						}
+					]
 				},
 				{
-					"name": "Reject Submission",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"approved\": false,\n  \"comment\": \"Please redo\"\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/submissions/1/review",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "submissions", "1", "review"]
-						},
-						"description": "Reject a submission. Optional comment."
-					}
+					"name": "LootBox",
+					"item": [
+						{
+							"name": "Gift LootBox to All",
+							"request": {
+								"method": "POST",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/lootbox/gift-all",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "lootbox", "gift-all"]
+								},
+								"description": "Give 1 lootbox to every non-admin user. Returns {\"gifted\": N}."
+							}
+						}
+					]
 				},
 				{
-					"name": "Cancel Submission",
-					"request": {
-						"method": "PATCH",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/submissions/1/cancel",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "submissions", "1", "cancel"]
-						},
-						"description": "Cancel a submission stuck in waitingForParticipants or pending. Returns 204."
-					}
-				},
-				{
-					"name": "Create Task",
-					"request": {
-						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"title\": \"Team Selfie\",\n  \"description\": \"Take a team selfie in the office\",\n  \"reward\": 500,\n  \"type\": \"photo\",\n  \"collaborative\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/tasks",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "tasks"]
-						},
-						"description": "Create a new task. Type: photo, video, text, creative."
-					}
-				},
-				{
-					"name": "Update Task",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"title\": \"Updated Title\",\n  \"description\": \"Updated description\",\n  \"reward\": 750,\n  \"type\": \"photo\",\n  \"collaborative\": false\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/tasks/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "tasks", "1"]
-						},
-						"description": "Update an existing task. All fields are optional."
-					}
-				},
-				{
-					"name": "Delete Task",
-					"request": {
-						"method": "DELETE",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/tasks/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "tasks", "1"]
-						},
-						"description": "Delete a task by ID."
-					}
-				},
-				{
-					"name": "Hide User",
-					"request": {
-						"method": "PATCH",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/users/1/hide",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "users", "1", "hide"]
-						},
-						"description": "Hide a user (exclude from lists and leaderboard)."
-					}
-				},
-				{
-					"name": "Reveal User",
-					"request": {
-						"method": "PATCH",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/users/1/reveal",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "users", "1", "reveal"]
-						},
-						"description": "Unhide a previously hidden user."
-					}
-				},
-				{
-					"name": "Reset User Password",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"newPassword\": \"newpassword123\"\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/users/1/reset-password",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "users", "1", "reset-password"]
-						},
-						"description": "Reset any user's password (min 8 chars)."
-					}
-				},
-				{
-					"name": "Set Bonus Points",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"bonusPoints\": 100\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/users/1/bonus",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "users", "1", "bonus"]
-						},
-						"description": "Set bonus points for a user."
-					}
-				},
-				{
-					"name": "Export Media (ZIP)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/admin/media/export",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "admin", "media", "export"]
-						},
-						"description": "Download all approved submission files as a ZIP archive."
-					}
+					"name": "Media",
+					"item": [
+						{
+							"name": "Export Media (ZIP)",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/media/export",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "admin", "media", "export"]
+								},
+								"description": "Download all submission files as a ZIP archive."
+							}
+						}
+					]
 				}
 			]
 		},

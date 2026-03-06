@@ -326,6 +326,52 @@ public class TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Медиафайл не найден"));
     }
 
+    // --- Admin Task Stats ---
+
+    @Transactional(readOnly = true)
+    public TaskStatsResponse getTaskStats(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
+
+        List<TaskSubmission> approved = submissionRepository.findApprovedByTaskId(taskId);
+
+        List<TaskStatsResponse.CompletedSubmissionEntry> entries = approved.stream()
+                .map(s -> TaskStatsResponse.CompletedSubmissionEntry.builder()
+                        .submissionId(s.getId())
+                        .earnedReward(s.getEarnedReward() != null ? s.getEarnedReward() : task.getReward())
+                        .createdAtEpoch(s.getCreatedAtEpoch())
+                        .participants(s.getParticipants().stream()
+                                .map(u -> UserResponse.builder()
+                                        .id(u.getId())
+                                        .login(u.getLogin())
+                                        .firstName(u.getFirstName())
+                                        .lastName(u.getLastName())
+                                        .department(u.getDepartment())
+                                        .hasAvatar(u.getAvatarPath() != null)
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
+        long uniqueUsers = approved.stream()
+                .flatMap(s -> s.getParticipants().stream())
+                .map(User::getId)
+                .distinct()
+                .count();
+
+        return TaskStatsResponse.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .reward(task.getReward())
+                .type(task.getType())
+                .collaborative(task.getCollaborative())
+                .completedSubmissionsCount(entries.size())
+                .completedUsersCount((int) uniqueUsers)
+                .completedSubmissions(entries)
+                .build();
+    }
+
     // --- Admin Task CRUD ---
 
     @Transactional
