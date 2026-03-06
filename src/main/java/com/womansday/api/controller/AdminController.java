@@ -117,6 +117,14 @@ public class AdminController {
         return ResponseEntity.ok(lootBoxService.getLootBoxStats());
     }
 
+    @PostMapping("/lootbox/gift")
+    public ResponseEntity<Map<String, Object>> giftLootBoxToUser(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "1") int count) {
+        int gifted = lootBoxService.giftToUser(userId, count);
+        return ResponseEntity.ok(Map.of("userId", userId, "gifted", gifted));
+    }
+
     @PostMapping("/lootbox/gift-all")
     public ResponseEntity<Map<String, Integer>> giftLootBoxToAll() {
         int count = lootBoxService.giftToAll();

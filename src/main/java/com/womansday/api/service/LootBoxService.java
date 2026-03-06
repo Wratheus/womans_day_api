@@ -206,6 +206,24 @@ public class LootBoxService {
     }
 
     @Transactional
+    public int giftToUser(Long userId, int count) {
+        if (count < 1) {
+            throw new BusinessLogicException("Количество должно быть >= 1");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+
+        List<LootBox> boxes = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            boxes.add(LootBox.builder().user(user).source(LootBoxSource.GIFT).build());
+        }
+        lootBoxRepository.saveAll(boxes);
+
+        log.info("Gift lootboxes issued: userId={}, count={}", userId, count);
+        return count;
+    }
+
+    @Transactional
     public int giftToAll() {
         List<User> users = userRepository.findByRoleNot(Role.ADMIN);
 

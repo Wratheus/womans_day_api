@@ -1083,6 +1083,37 @@
 							}
 						},
 						{
+							"name": "Gift LootBox to User",
+							"request": {
+								"method": "POST",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/lootbox/gift?userId=1&count=3",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"lootbox",
+										"gift"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1",
+											"description": "Target user ID"
+										},
+										{
+											"key": "count",
+											"value": "3",
+											"description": "Number of lootboxes to gift (default: 1)"
+										}
+									]
+								},
+								"description": "Gift a specified number of lootboxes (type: GIFT) to a specific user. Returns {\"userId\": N, \"gifted\": N}."
+							}
+						},
+						{
 							"name": "Gift LootBox to All",
 							"request": {
 								"method": "POST",
