@@ -50,8 +50,7 @@ public class UserService {
 
     @Transactional
     public UserResponse hideUser(Long userId) {
-        @SuppressWarnings("null")
-        User user = userRepository.findById(userId)
+            User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         user.setHidden(true);
         userRepository.save(user);
@@ -61,8 +60,7 @@ public class UserService {
 
     @Transactional
     public UserResponse revealUser(Long userId) {
-        @SuppressWarnings("null")
-        User user = userRepository.findById(userId)
+            User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         user.setHidden(false);
         userRepository.save(user);
@@ -71,7 +69,6 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    @SuppressWarnings("null")
     public MeResponse getMe(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
@@ -79,7 +76,6 @@ public class UserService {
     }
 
     @Transactional
-    @SuppressWarnings("null")
     public MeResponse updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
@@ -99,7 +95,6 @@ public class UserService {
     }
 
     @Transactional
-    @SuppressWarnings("null")
     public String uploadAvatar(Long userId, MultipartFile avatar) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
@@ -128,7 +123,6 @@ public class UserService {
     }
 
     @Transactional
-    @SuppressWarnings("null")
     public void deleteAvatar(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
@@ -148,14 +142,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    @SuppressWarnings("null")
     public User getUserEntity(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
     }
 
     @Transactional
-    @SuppressWarnings("null")
     public UserResponse setBonusPoints(Long userId, int bonusPoints) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
@@ -169,8 +161,6 @@ public class UserService {
                     .build());
         }
 
-        user.setBonusPoints(user.getBonusPoints() + bonusPoints);
-        userRepository.save(user);
         log.info("Bonus points added: userId={}, amount={}", userId, bonusPoints);
         return toUserResponse(user, Role.ADMIN);
     }

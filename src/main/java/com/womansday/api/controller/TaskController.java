@@ -83,7 +83,6 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getBudget());
     }
 
-    @SuppressWarnings("null")
     @GetMapping("/files/{fileId}")
     public ResponseEntity<Resource> getFile(@PathVariable Long fileId, Authentication authentication) {
         Long userId = SecurityUtils.extractUserId(authentication);

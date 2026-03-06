@@ -36,7 +36,6 @@ public class RootController {
                 """;
     }
 
-    @SuppressWarnings("null")
     @GetMapping(value = "/brew-coffee", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> makeCoffee() {
 

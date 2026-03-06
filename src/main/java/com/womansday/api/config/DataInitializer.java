@@ -26,7 +26,6 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@SuppressWarnings("null")
 public class DataInitializer implements CommandLineRunner {
 
         private final TaskRepository taskRepository;

@@ -33,7 +33,6 @@ public class AuthService {
 
     private static final int MAX_USERS = 140;
 
-    @SuppressWarnings("null")
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
@@ -101,7 +100,6 @@ public class AuthService {
         }
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
-        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
 
@@ -114,7 +112,6 @@ public class AuthService {
 
     @Transactional
     public void changePassword(Long userId, String currentPassword, String newPassword) {
-        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
 
@@ -129,7 +126,6 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(Long userId, String newPassword) {
-        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException("Пользователь не найден"));
 
@@ -147,7 +143,6 @@ public class AuthService {
         }
     }
 
-    @SuppressWarnings("null")
     private void revokeToken(String jti, String token) {
         Instant expiresAt = jwtTokenProvider.getExpiration(token).toInstant();
         RevokedToken revoked = RevokedToken.builder()

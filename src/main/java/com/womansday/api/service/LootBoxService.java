@@ -28,7 +28,6 @@ import com.womansday.api.dto.response.UserBalanceStatsResponse;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings("null")
 public class LootBoxService {
 
     private static final int LOOTBOX_MILESTONE = 150;
