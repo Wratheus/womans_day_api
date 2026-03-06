@@ -9,7 +9,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class LootBoxResponse {
     private Long id;
-    private Integer cost;
     private Integer prizeAmount;
     private Long openedAtEpoch;
     private Long createdAtEpoch;

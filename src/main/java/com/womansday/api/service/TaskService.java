@@ -38,6 +38,7 @@ public class TaskService {
     private final UserRepository userRepository;
     private final MediaStorageService mediaStorageService;
     private final BalanceTransactionRepository balanceTransactionRepository;
+    private final LootBoxService lootBoxService;
 
     @Transactional(readOnly = true)
     public List<TaskResponse> getAllTasks(Long userId) {
@@ -267,6 +268,9 @@ public class TaskService {
                         .referenceId(submission.getId())
                         .description(submission.getTask().getTitle())
                         .build());
+
+                lootBoxService.checkAndAwardFirstTaskBonus(participant);
+                lootBoxService.checkAndAwardMilestoneBoxes(participant);
             }
         }
 

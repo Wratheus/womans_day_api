@@ -13,4 +13,6 @@ public interface LootBoxRepository extends JpaRepository<LootBox, Long> {
 
     @Query("SELECT COUNT(lb) FROM LootBox lb WHERE lb.user.id = :userId AND lb.prizeAmount IS NULL")
     int countUnopenedByUserId(@Param("userId") Long userId);
+
+    long countByUserId(Long userId);
 }

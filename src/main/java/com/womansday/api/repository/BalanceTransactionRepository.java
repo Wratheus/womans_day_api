@@ -13,6 +13,12 @@ public interface BalanceTransactionRepository extends JpaRepository<BalanceTrans
     @Query("SELECT COALESCE(SUM(bt.amount), 0) FROM BalanceTransaction bt WHERE bt.user.id = :userId")
     long sumByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COALESCE(SUM(bt.amount), 0) FROM BalanceTransaction bt WHERE bt.user.id = :userId AND bt.type = :type")
+    long sumByUserIdAndType(@Param("userId") Long userId, @Param("type") TransactionType type);
+
+    @Query("SELECT COUNT(bt) FROM BalanceTransaction bt WHERE bt.user.id = :userId AND bt.type = :type")
+    long countByUserIdAndType(@Param("userId") Long userId, @Param("type") TransactionType type);
+
     @Query("SELECT bt.user.id, COALESCE(SUM(bt.amount), 0) FROM BalanceTransaction bt GROUP BY bt.user.id")
     List<Object[]> sumGroupedByUser();
 

@@ -20,9 +20,6 @@ public class LootBox {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private Integer cost;
-
     @Column(name = "prize_amount")
     private Integer prizeAmount;
 

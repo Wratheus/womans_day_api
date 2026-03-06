@@ -11,6 +11,7 @@ import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.dto.response.UserResponse;
 import com.womansday.api.enums.Role;
 import com.womansday.api.service.AuthService;
+import com.womansday.api.service.LootBoxService;
 import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
 import com.womansday.api.service.UserService;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -30,6 +32,7 @@ import java.util.List;
 public class AdminController {
 
     private final AuthService authService;
+    private final LootBoxService lootBoxService;
     private final MediaStorageService mediaStorageService;
     private final TaskService taskService;
     private final UserService userService;
@@ -99,6 +102,19 @@ public class AdminController {
     @GetMapping("/leaderboard")
     public ResponseEntity<List<LeaderboardEntry>> getLeaderboard() {
         return ResponseEntity.ok(taskService.getLeaderboard(Role.ADMIN));
+    }
+
+    @PostMapping("/lootbox/gift-all")
+    public ResponseEntity<Map<String, Integer>> giftLootBoxToAll() {
+        int count = lootBoxService.giftToAll();
+        return ResponseEntity.ok(Map.of("gifted", count));
+    }
+
+    /** One-time migration: give 1 lootbox to every non-admin user who has ≥1 completed task. */
+    @PostMapping("/lootbox/first-task-gift")
+    public ResponseEntity<Map<String, Integer>> giftFirstTaskBonus() {
+        int count = lootBoxService.giftFirstTaskBonusToEligibleUsers();
+        return ResponseEntity.ok(Map.of("gifted", count));
     }
 
     @GetMapping("/media/export")

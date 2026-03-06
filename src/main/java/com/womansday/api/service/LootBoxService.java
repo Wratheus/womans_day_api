@@ -5,6 +5,7 @@ import com.womansday.api.dto.response.LootBoxResponse;
 import com.womansday.api.entity.BalanceTransaction;
 import com.womansday.api.entity.LootBox;
 import com.womansday.api.entity.User;
+import com.womansday.api.enums.Role;
 import com.womansday.api.enums.TransactionType;
 import com.womansday.api.exception.BusinessLogicException;
 import com.womansday.api.exception.ResourceNotFoundException;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -26,16 +28,15 @@ import java.util.stream.Collectors;
 @SuppressWarnings("null")
 public class LootBoxService {
 
-    private static final int LOOTBOX_COST = 30;
+    private static final int LOOTBOX_MILESTONE = 150;
 
+    // {amount, weight} — weights sum to 100, EV ≈ 23.5
     private static final int[][] PRIZE_TIERS = {
-            // {amount, weight}
-            {5, 30},
-            {10, 25},
-            {20, 20},
-            {30, 15},
-            {50, 8},
-            {100, 2},
+            {5,   50},
+            {10,  25},
+            {30,  15},
+            {80,   7},
+            {280,  3},
     };
 
     private static final int TOTAL_WEIGHT;
@@ -52,32 +53,49 @@ public class LootBoxService {
     private final BalanceTransactionRepository balanceTransactionRepository;
     private final UserRepository userRepository;
 
-    @Transactional
-    public LootBoxResponse purchase(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+    public void checkAndAwardFirstTaskBonus(User user) {
+        long taskRewardCount = balanceTransactionRepository.countByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
+        if (taskRewardCount == 1) {
+            lootBoxRepository.save(LootBox.builder().user(user).build());
+            log.info("First-task bonus lootbox awarded: userId={}", user.getId());
+        }
+    }
 
-        long balance = balanceTransactionRepository.sumByUserId(userId);
-        if (balance < LOOTBOX_COST) {
-            throw new BusinessLogicException("Недостаточно тюльпанов для покупки лутбокса");
+    @Transactional
+    public int giftFirstTaskBonusToEligibleUsers() {
+        List<User> users = userRepository.findByRoleNot(Role.ADMIN);
+
+        List<LootBox> boxes = new ArrayList<>();
+        for (User user : users) {
+            long taskRewardCount = balanceTransactionRepository.countByUserIdAndType(
+                    user.getId(), TransactionType.TASK_REWARD);
+            if (taskRewardCount >= 1) {
+                boxes.add(LootBox.builder().user(user).build());
+            }
         }
 
-        LootBox lootBox = LootBox.builder()
-                .user(user)
-                .cost(LOOTBOX_COST)
-                .build();
-        lootBox = lootBoxRepository.save(lootBox);
+        if (!boxes.isEmpty()) {
+            lootBoxRepository.saveAll(boxes);
+        }
 
-        balanceTransactionRepository.save(BalanceTransaction.builder()
-                .user(user)
-                .type(TransactionType.LOOTBOX_PURCHASE)
-                .amount(-LOOTBOX_COST)
-                .referenceId(lootBox.getId())
-                .description("Покупка лутбокса")
-                .build());
+        log.info("First-task bonus migration: {} lootboxes issued", boxes.size());
+        return boxes.size();
+    }
 
-        log.info("LootBox purchased: id={}, userId={}, cost={}", lootBox.getId(), userId, LOOTBOX_COST);
-        return toLootBoxResponse(lootBox);
+    public void checkAndAwardMilestoneBoxes(User user) {
+        long taskEarnings = balanceTransactionRepository.sumByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
+        long boxesEarned = taskEarnings / LOOTBOX_MILESTONE;
+        long existingBoxes = lootBoxRepository.countByUserId(user.getId());
+        long toAward = boxesEarned - existingBoxes;
+
+        if (toAward > 0) {
+            List<LootBox> boxes = new ArrayList<>();
+            for (int i = 0; i < toAward; i++) {
+                boxes.add(LootBox.builder().user(user).build());
+            }
+            lootBoxRepository.saveAll(boxes);
+            log.info("Milestone lootboxes awarded: userId={}, count={}", user.getId(), toAward);
+        }
     }
 
     @Transactional
@@ -130,8 +148,18 @@ public class LootBoxService {
                 .collect(Collectors.toList());
     }
 
-    public int getLootBoxCost() {
-        return LOOTBOX_COST;
+    @Transactional
+    public int giftToAll() {
+        List<User> users = userRepository.findByRoleNot(Role.ADMIN);
+
+        List<LootBox> boxes = users.stream()
+                .map(user -> LootBox.builder().user(user).build())
+                .collect(Collectors.toList());
+
+        lootBoxRepository.saveAll(boxes);
+
+        log.info("Gift lootboxes issued to {} users", boxes.size());
+        return boxes.size();
     }
 
     private int rollPrize() {
@@ -149,7 +177,6 @@ public class LootBoxService {
     private LootBoxResponse toLootBoxResponse(LootBox lb) {
         return LootBoxResponse.builder()
                 .id(lb.getId())
-                .cost(lb.getCost())
                 .prizeAmount(lb.getPrizeAmount())
                 .openedAtEpoch(lb.getOpenedAtEpoch())
                 .createdAtEpoch(lb.getCreatedAtEpoch())
