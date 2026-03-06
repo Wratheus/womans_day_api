@@ -116,8 +116,13 @@ public class LootBoxService {
         return boxes.size();
     }
 
+    private static final long MILESTONE_CAP = 1500;
+
     public void checkAndAwardMilestoneBoxes(User user) {
         long taskEarnings = balanceTransactionRepository.sumByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
+        if (taskEarnings > MILESTONE_CAP) {
+            taskEarnings = MILESTONE_CAP;
+        }
         long boxesEarned = taskEarnings / LOOTBOX_MILESTONE;
         long existingMilestoneBoxes = lootBoxRepository.countByUserIdAndSource(user.getId(), LootBoxSource.MILESTONE);
         long toAward = boxesEarned - existingMilestoneBoxes;
@@ -139,6 +144,9 @@ public class LootBoxService {
         List<LootBox> boxes = new ArrayList<>();
         for (User user : users) {
             long taskEarnings = balanceTransactionRepository.sumByUserIdAndType(user.getId(), TransactionType.TASK_REWARD);
+            if (taskEarnings > MILESTONE_CAP) {
+                taskEarnings = MILESTONE_CAP;
+            }
             long boxesEarned = taskEarnings / LOOTBOX_MILESTONE;
             long existingMilestoneBoxes = lootBoxRepository.countByUserIdAndSource(user.getId(), LootBoxSource.MILESTONE);
             long toAward = boxesEarned - existingMilestoneBoxes;
