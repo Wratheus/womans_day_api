@@ -1,18 +1,31 @@
 {
 	"info": {
 		"name": "WomansDay API",
-		"description": "Corporate March 8th event API.\n\n## Auth\nRegister or Login to get tokens. Tokens are auto-saved to collection variables.\n\n## Response Models\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"role\": \"user\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"balance\": 1500,\n  \"hasAvatar\": true,\n  \"unopenedBoxes\": 2\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"hidden\": false\n}\n```\n_Note: `hidden` is only present for admin callers._\n\n### TaskResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"MEDIA\",\n  \"collaborative\": true,\n  \"myStatus\": \"pending\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Maria\",\n  \"submitterLastName\": \"Ivanova\",\n  \"submitterDepartment\": \"Accounting\",\n  \"participants\": [UserResponse],\n  \"pendingParticipants\": [UserResponse],\n  \"status\": \"pending\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": 1741428600000,\n  \"fileIds\": [1, 2]\n}\n```\n\n### LootBoxResponse\n```json\n{\n  \"id\": 1,\n  \"prizeAmount\": 50,\n  \"openedAtEpoch\": 1741428600000,\n  \"createdAtEpoch\": 1741400000000\n}\n```\n_Note: `prizeAmount` is null for unopened boxes._\n\n### TaskStatsResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 50,\n  \"type\": \"MEDIA\",\n  \"collaborative\": false,\n  \"completedSubmissionsCount\": 4,\n  \"completedUsersCount\": 5,\n  \"completedSubmissions\": [\n    {\n      \"submissionId\": 12,\n      \"earnedReward\": 50,\n      \"createdAtEpoch\": 1741200000000,\n      \"participants\": [UserResponse]\n    }\n  ]\n}\n```\n\n### LeaderboardEntry\n```json\n{\n  \"userId\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"earned\": 1500,\n  \"rank\": 1,\n  \"hidden\": false\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 50000,\n  \"approvedBudget\": 3200\n}\n```\n\n### Error Response\n```json\n{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Login is already taken\"\n}\n```\n\n## Statuses\n- `notStarted` — user has not submitted\n- `waitingForParticipants` — waiting for invited participants\n- `invited` — user has a pending invitation\n- `pending` — awaiting admin review\n- `approved` — approved by admin\n- `rejected` — rejected by admin\n- `cancelled` — all participants declined\n\n## LootBox Rules\n- 1 box given automatically on first completed task\n- 1 box given for every 150 tulips earned from tasks\n- Prize tiers (EV ≈ 23.5): 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%)",
+		"description": "Corporate March 8th event API.\n\n## Auth\nRegister or Login to get tokens. Tokens are auto-saved to collection variables.\n\n## Response Models\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"role\": \"user\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"balance\": 1500,\n  \"hasAvatar\": true,\n  \"unopenedBoxes\": 2\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"hidden\": false\n}\n```\n_Note: `hidden` is only present for admin callers._\n\n### TaskResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"MEDIA\",\n  \"collaborative\": true,\n  \"myStatus\": \"pending\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Maria\",\n  \"submitterLastName\": \"Ivanova\",\n  \"submitterDepartment\": \"Accounting\",\n  \"participants\": [UserResponse],\n  \"pendingParticipants\": [UserResponse],\n  \"status\": \"pending\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": 1741428600000,\n  \"fileIds\": [1, 2]\n}\n```\n\n### LootBoxResponse\n```json\n{\n  \"id\": 1,\n  \"prizeAmount\": 50,\n  \"openedAtEpoch\": 1741428600000,\n  \"createdAtEpoch\": 1741400000000\n}\n```\n_Note: `prizeAmount` is null for unopened boxes._\n\n### TaskStatsResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 50,\n  \"type\": \"MEDIA\",\n  \"collaborative\": false,\n  \"completedSubmissionsCount\": 4,\n  \"completedUsersCount\": 5,\n  \"completedSubmissions\": [\n    {\n      \"submissionId\": 12,\n      \"earnedReward\": 50,\n      \"createdAtEpoch\": 1741200000000,\n      \"participants\": [UserResponse]\n    }\n  ]\n}\n```\n\n### LeaderboardEntry\n```json\n{\n  \"userId\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"earned\": 1500,\n  \"rank\": 1,\n  \"hidden\": false\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 50000,\n  \"approvedBudget\": 3200\n}\n```\n\n\n\n### LootBoxStatsResponse\n```json\n{\n  \"totalOpened\": 42,\n  \"totalUnopened\": 15,\n  \"totalPrizeSum\": 890,\n  \"tiers\": [\n    {\n      \"prizeAmount\": 5,\n      \"configuredWeight\": 50,\n      \"configuredChance\": 50.0,\n      \"actualCount\": 22,\n      \"actualChance\": 52.38\n    }\n  ]\n}\n```\n\n### UserBalanceStatsResponse\n```json\n{\n  \"userId\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"currentBalance\": 350,\n  \"totalByType\": {\n    \"taskReward\": 500,\n    \"bonus\": 50,\n    \"lootboxPrize\": 100\n  },\n  \"history\": [BalanceHistoryEntry]\n}\n```\n\n### Error Response\n```json\n{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Login is already taken\"\n}\n```\n\n## Statuses\n- `notStarted` — user has not submitted\n- `waitingForParticipants` — waiting for invited participants\n- `invited` — user has a pending invitation\n- `pending` — awaiting admin review\n- `approved` — approved by admin\n- `rejected` — rejected by admin\n- `cancelled` — all participants declined\n\n## LootBox Rules\n- 1 box given automatically on first completed task\n- 1 box given for every 150 tulips earned from tasks\n- Prize tiers (EV ≈ 23.5): 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
-		{ "key": "baseUrl", "value": "http://localhost:8080" },
-		{ "key": "accessToken", "value": "" },
-		{ "key": "refreshToken", "value": "" }
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
+		}
 	],
 	"auth": {
 		"type": "bearer",
 		"bearer": [
-			{ "key": "token", "value": "{{accessToken}}", "type": "string" }
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
 		]
 	},
 	"item": [
@@ -24,7 +37,10 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
@@ -32,10 +48,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/register",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "register"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
 						},
-						"auth": { "type": "noauth" },
+						"auth": {
+							"type": "noauth"
+						},
 						"description": "Register a new user. Returns tokens (auto-saved)."
 					},
 					"event": [
@@ -58,7 +82,10 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
@@ -66,10 +93,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/login",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "login"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
 						},
-						"auth": { "type": "noauth" },
+						"auth": {
+							"type": "noauth"
+						},
 						"description": "Login with credentials. Returns tokens (auto-saved)."
 					},
 					"event": [
@@ -92,7 +127,10 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
@@ -100,10 +138,18 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/refresh",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "refresh"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
 						},
-						"auth": { "type": "noauth" },
+						"auth": {
+							"type": "noauth"
+						},
 						"description": "Get new access + refresh tokens using the current refresh token."
 					},
 					"event": [
@@ -126,7 +172,10 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
@@ -134,8 +183,14 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/change-password",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "change-password"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-password"
+							]
 						},
 						"description": "Change password for the authenticated user."
 					}
@@ -145,7 +200,10 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
@@ -153,8 +211,14 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/auth/logout",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "logout"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
 						},
 						"description": "Invalidate the refresh token."
 					}
@@ -170,8 +234,14 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
 						},
 						"description": "Get current user profile: id, name, department, balance, hasAvatar, unopenedBoxes."
 					}
@@ -181,7 +251,10 @@
 					"request": {
 						"method": "PATCH",
 						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
 						],
 						"body": {
 							"mode": "raw",
@@ -189,8 +262,14 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
 						},
 						"description": "Update profile fields. All fields are optional."
 					}
@@ -202,13 +281,24 @@
 						"body": {
 							"mode": "formdata",
 							"formdata": [
-								{ "key": "avatar", "type": "file", "src": "" }
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": ""
+								}
 							]
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me/avatar",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me", "avatar"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"avatar"
+							]
 						},
 						"description": "Upload avatar image (jpg, png, webp, gif, heic)."
 					}
@@ -219,8 +309,15 @@
 						"method": "DELETE",
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me/avatar",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me", "avatar"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"avatar"
+							]
 						},
 						"description": "Remove current user's avatar."
 					}
@@ -231,8 +328,15 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/users/1/avatar",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "1", "avatar"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"1",
+								"avatar"
+							]
 						},
 						"description": "Get avatar image for any user by ID. Returns binary image."
 					}
@@ -243,8 +347,13 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/users",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
 						},
 						"description": "Regular users see only non-hidden non-admin users. Admin sees all users including hidden ones (with `hidden` field)."
 					}
@@ -255,8 +364,15 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me/submissions",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me", "submissions"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"submissions"
+							]
 						},
 						"description": "Get all submissions where the current user is a participant."
 					}
@@ -267,8 +383,15 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me/invitations",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me", "invitations"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"invitations"
+							]
 						},
 						"description": "Get all collaborative submissions where the current user is invited (status: waitingForParticipants)."
 					}
@@ -279,8 +402,15 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/users/me/history",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "users", "me", "history"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"history"
+							]
 						},
 						"description": "Get balance transaction history for current user. Types: taskReward, bonus, lootboxPrize."
 					}
@@ -296,8 +426,13 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
 						},
 						"description": "Get all tasks with current user's submission status."
 					}
@@ -308,8 +443,14 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"1"
+							]
 						},
 						"description": "Get a single task with current user's submission details."
 					}
@@ -321,14 +462,29 @@
 						"body": {
 							"mode": "formdata",
 							"formdata": [
-								{ "key": "text", "value": "My answer text", "type": "text" },
-								{ "key": "files", "type": "file", "src": "" }
+								{
+									"key": "text",
+									"value": "My answer text",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": ""
+								}
 							]
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/1/submit",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "1", "submit"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"1",
+								"submit"
+							]
 						},
 						"description": "Solo submission. Status immediately becomes `pending`."
 					}
@@ -340,16 +496,39 @@
 						"body": {
 							"mode": "formdata",
 							"formdata": [
-								{ "key": "text", "value": "Our team answer", "type": "text" },
-								{ "key": "files", "type": "file", "src": "" },
-								{ "key": "participantIds", "value": "2", "type": "text" },
-								{ "key": "participantIds", "value": "3", "type": "text" }
+								{
+									"key": "text",
+									"value": "Our team answer",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": ""
+								},
+								{
+									"key": "participantIds",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "participantIds",
+									"value": "3",
+									"type": "text"
+								}
 							]
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/1/submit",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "1", "submit"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"1",
+								"submit"
+							]
 						},
 						"description": "Collaborative submission. Status becomes `waitingForParticipants` until all invited users accept."
 					}
@@ -360,10 +539,21 @@
 						"method": "POST",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/submissions/1/respond?accept=true",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "submissions", "1", "respond"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"submissions",
+								"1",
+								"respond"
+							],
 							"query": [
-								{ "key": "accept", "value": "true" }
+								{
+									"key": "accept",
+									"value": "true"
+								}
 							]
 						},
 						"description": "Accept a co-participation invitation. When all accept, status becomes `pending`."
@@ -375,10 +565,21 @@
 						"method": "POST",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/submissions/1/respond?accept=false",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "submissions", "1", "respond"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"submissions",
+								"1",
+								"respond"
+							],
 							"query": [
-								{ "key": "accept", "value": "false" }
+								{
+									"key": "accept",
+									"value": "false"
+								}
 							]
 						},
 						"description": "Decline a co-participation invitation. If all decline, submission is `cancelled`."
@@ -390,8 +591,15 @@
 						"method": "DELETE",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/submissions/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "submissions", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"submissions",
+								"1"
+							]
 						},
 						"description": "Cancel own submission (submitter only). Allowed when status is pending or waitingForParticipants."
 					}
@@ -402,8 +610,14 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/budget",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "budget"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"budget"
+							]
 						},
 						"description": "Get total and approved budget. Available to all authenticated users."
 					}
@@ -414,8 +628,15 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/tasks/files/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "tasks", "files", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"files",
+								"1"
+							]
 						},
 						"description": "Get submission file by ID. Users can only access files from their own submissions. Admin can access all."
 					}
@@ -431,8 +652,13 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/lootbox",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "lootbox"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"lootbox"
+							]
 						},
 						"description": "Get all lootboxes for the current user (opened and unopened), sorted by createdAtEpoch desc. Unopened boxes have `prizeAmount: null`."
 					}
@@ -443,8 +669,15 @@
 						"method": "POST",
 						"url": {
 							"raw": "{{baseUrl}}/api/lootbox/1/open",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "lootbox", "1", "open"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"lootbox",
+								"1",
+								"open"
+							]
 						},
 						"description": "Open a lootbox to reveal the prize. Prize tiers: 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%). EV ≈ 23.5 tulips."
 					}
@@ -464,8 +697,14 @@
 								"method": "GET",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/submissions",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "submissions"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"submissions"
+									]
 								},
 								"description": "Get all submissions sorted by status (PENDING first), then createdAtEpoch asc."
 							}
@@ -476,10 +715,20 @@
 								"method": "GET",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/submissions?status=PENDING",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "submissions"],
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"submissions"
+									],
 									"query": [
-										{ "key": "status", "value": "PENDING", "description": "PENDING | APPROVED | REJECTED | WAITING_FOR_PARTICIPANTS | CANCELLED" }
+										{
+											"key": "status",
+											"value": "PENDING",
+											"description": "PENDING | APPROVED | REJECTED | WAITING_FOR_PARTICIPANTS | CANCELLED"
+										}
 									]
 								},
 								"description": "Filter submissions by status."
@@ -490,7 +739,10 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
 								"body": {
 									"mode": "raw",
@@ -498,8 +750,16 @@
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/submissions/1/review",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "submissions", "1", "review"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"submissions",
+										"1",
+										"review"
+									]
 								},
 								"description": "Approve a submission. Tulips are credited to all participants. Lootboxes are awarded automatically (first task bonus + milestones)."
 							}
@@ -509,7 +769,10 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
 								"body": {
 									"mode": "raw",
@@ -517,8 +780,16 @@
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/submissions/1/review",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "submissions", "1", "review"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"submissions",
+										"1",
+										"review"
+									]
 								},
 								"description": "Reject a submission with an optional comment."
 							}
@@ -529,8 +800,16 @@
 								"method": "PATCH",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/submissions/1/cancel",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "submissions", "1", "cancel"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"submissions",
+										"1",
+										"cancel"
+									]
 								},
 								"description": "Cancel a submission stuck in waitingForParticipants or pending. Returns 204."
 							}
@@ -545,7 +824,10 @@
 							"request": {
 								"method": "POST",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
 								"body": {
 									"mode": "raw",
@@ -553,8 +835,14 @@
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/tasks",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "tasks"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"tasks"
+									]
 								},
 								"description": "Create a new task. Type: TEXT | MEDIA | TEXT_AND_MEDIA."
 							}
@@ -564,7 +852,10 @@
 							"request": {
 								"method": "PUT",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
 								"body": {
 									"mode": "raw",
@@ -572,8 +863,15 @@
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/tasks/1",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "tasks", "1"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"tasks",
+										"1"
+									]
 								},
 								"description": "Update an existing task. All fields are optional."
 							}
@@ -584,8 +882,15 @@
 								"method": "DELETE",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/tasks/1",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "tasks", "1"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"tasks",
+										"1"
+									]
 								},
 								"description": "Delete a task. Fails if there are active submissions."
 							}
@@ -596,8 +901,16 @@
 								"method": "GET",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/tasks/1/stats",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "tasks", "1", "stats"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"tasks",
+										"1",
+										"stats"
+									]
 								},
 								"description": "Get task info + all approved submissions with participants and earned rewards. Returns completedSubmissionsCount, completedUsersCount and full completedSubmissions list."
 							}
@@ -613,8 +926,14 @@
 								"method": "GET",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/leaderboard",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "leaderboard"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"leaderboard"
+									]
 								},
 								"description": "Get all non-admin users sorted by earned tulips descending, including hidden ones. Returns rank, earned, hidden flag."
 							}
@@ -625,8 +944,16 @@
 								"method": "PATCH",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/users/1/hide",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "users", "1", "hide"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"1",
+										"hide"
+									]
 								},
 								"description": "Hide a user — exclude from public lists and leaderboard."
 							}
@@ -637,8 +964,16 @@
 								"method": "PATCH",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/users/1/reveal",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "users", "1", "reveal"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"1",
+										"reveal"
+									]
 								},
 								"description": "Unhide a previously hidden user."
 							}
@@ -648,7 +983,10 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
 								"body": {
 									"mode": "raw",
@@ -656,8 +994,16 @@
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/users/1/reset-password",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "users", "1", "reset-password"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"1",
+										"reset-password"
+									]
 								},
 								"description": "Reset any user's password (min 8 chars)."
 							}
@@ -667,7 +1013,10 @@
 							"request": {
 								"method": "PATCH",
 								"header": [
-									{ "key": "Content-Type", "value": "application/json" }
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
 								"body": {
 									"mode": "raw",
@@ -675,10 +1024,38 @@
 								},
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/users/1/bonus",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "users", "1", "bonus"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"1",
+										"bonus"
+									]
 								},
 								"description": "Add bonus tulips to a user's balance (creates a BONUS transaction)."
+							}
+						},
+						{
+							"name": "User Balance Stats",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/1/balance-stats",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"1",
+										"balance-stats"
+									]
+								},
+								"description": "Get detailed balance statistics for a user: current balance, totals by transaction type (taskReward, bonus, lootboxPrize), and full transaction history."
 							}
 						}
 					]
@@ -687,13 +1064,39 @@
 					"name": "LootBox",
 					"item": [
 						{
+							"name": "LootBox Stats",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/lootbox/stats",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"lootbox",
+										"stats"
+									]
+								},
+								"description": "Get lootbox statistics: total opened/unopened, total prize sum, and per-tier breakdown with configured vs actual drop chances."
+							}
+						},
+						{
 							"name": "Gift LootBox to All",
 							"request": {
 								"method": "POST",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/lootbox/gift-all",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "lootbox", "gift-all"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"lootbox",
+										"gift-all"
+									]
 								},
 								"description": "Give 1 lootbox to every non-admin user. Returns {\"gifted\": N}."
 							}
@@ -709,8 +1112,15 @@
 								"method": "GET",
 								"url": {
 									"raw": "{{baseUrl}}/api/admin/media/export",
-									"host": ["{{baseUrl}}"],
-									"path": ["api", "admin", "media", "export"]
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"media",
+										"export"
+									]
 								},
 								"description": "Download all submission files as a ZIP archive."
 							}
@@ -729,10 +1139,17 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/status",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "status"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"status"
+							]
 						},
-						"auth": { "type": "noauth" },
+						"auth": {
+							"type": "noauth"
+						},
 						"description": "Health check. Returns JSON with API name and status."
 					}
 				},
@@ -742,10 +1159,17 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", ""]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								""
+							]
 						},
-						"auth": { "type": "noauth" },
+						"auth": {
+							"type": "noauth"
+						},
 						"description": "HTML landing page."
 					}
 				},
@@ -755,10 +1179,17 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/brew-coffee",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "brew-coffee"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"brew-coffee"
+							]
 						},
-						"auth": { "type": "noauth" },
+						"auth": {
+							"type": "noauth"
+						},
 						"description": "418 I'm a teapot."
 					}
 				}

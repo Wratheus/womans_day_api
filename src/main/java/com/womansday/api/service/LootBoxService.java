@@ -22,6 +22,9 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import com.womansday.api.dto.response.LootBoxStatsResponse;
+import com.womansday.api.dto.response.UserBalanceStatsResponse;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -214,6 +217,76 @@ public class LootBoxService {
 
         log.info("Gift lootboxes issued to {} users", boxes.size());
         return boxes.size();
+    }
+
+    @Transactional(readOnly = true)
+    public LootBoxStatsResponse getLootBoxStats() {
+        long totalOpened = lootBoxRepository.countOpened();
+        long totalUnopened = lootBoxRepository.countUnopened();
+        long totalPrizeSum = lootBoxRepository.sumPrizeAmount();
+
+        Map<Integer, Long> actualCounts = new HashMap<>();
+        for (Object[] row : lootBoxRepository.countGroupedByPrizeAmount()) {
+            actualCounts.put((Integer) row[0], (Long) row[1]);
+        }
+
+        List<LootBoxStatsResponse.TierStats> tiers = new ArrayList<>();
+        for (int[] tier : PRIZE_TIERS) {
+            int amount = tier[0];
+            int weight = tier[1];
+            long count = actualCounts.getOrDefault(amount, 0L);
+            tiers.add(LootBoxStatsResponse.TierStats.builder()
+                    .prizeAmount(amount)
+                    .configuredWeight(weight)
+                    .configuredChance(Math.round(weight * 10000.0 / TOTAL_WEIGHT) / 100.0)
+                    .actualCount(count)
+                    .actualChance(totalOpened > 0
+                            ? Math.round(count * 10000.0 / totalOpened) / 100.0
+                            : 0.0)
+                    .build());
+        }
+
+        return LootBoxStatsResponse.builder()
+                .totalOpened(totalOpened)
+                .totalUnopened(totalUnopened)
+                .totalPrizeSum(totalPrizeSum)
+                .tiers(tiers)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public UserBalanceStatsResponse getUserBalanceStats(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
+
+        long currentBalance = balanceTransactionRepository.sumByUserId(userId);
+
+        Map<String, Long> totalByType = new LinkedHashMap<>();
+        for (TransactionType type : TransactionType.values()) {
+            long sum = balanceTransactionRepository.sumByUserIdAndType(userId, type);
+            totalByType.put(type.value(), sum);
+        }
+
+        List<BalanceHistoryEntry> history = balanceTransactionRepository
+                .findByUserIdOrderByCreatedAtEpochDesc(userId).stream()
+                .map(bt -> BalanceHistoryEntry.builder()
+                        .id(bt.getId())
+                        .type(bt.getType())
+                        .amount(bt.getAmount())
+                        .description(bt.getDescription())
+                        .createdAtEpoch(bt.getCreatedAtEpoch())
+                        .build())
+                .collect(Collectors.toList());
+
+        return UserBalanceStatsResponse.builder()
+                .userId(user.getId())
+                .login(user.getLogin())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .currentBalance(currentBalance)
+                .totalByType(totalByType)
+                .history(history)
+                .build();
     }
 
     private int rollPrize() {

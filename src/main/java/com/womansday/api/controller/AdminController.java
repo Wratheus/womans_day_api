@@ -7,8 +7,10 @@ import com.womansday.api.dto.request.ReviewRequest;
 import com.womansday.api.dto.request.UpdateTaskRequest;
 import com.womansday.api.dto.response.AdminSubmissionResponse;
 import com.womansday.api.dto.response.LeaderboardEntry;
+import com.womansday.api.dto.response.LootBoxStatsResponse;
 import com.womansday.api.dto.response.TaskResponse;
 import com.womansday.api.dto.response.TaskStatsResponse;
+import com.womansday.api.dto.response.UserBalanceStatsResponse;
 import com.womansday.api.dto.response.UserResponse;
 import com.womansday.api.enums.Role;
 import com.womansday.api.service.AuthService;
@@ -110,10 +112,20 @@ public class AdminController {
         return ResponseEntity.ok(taskService.getLeaderboard(Role.ADMIN));
     }
 
+    @GetMapping("/lootbox/stats")
+    public ResponseEntity<LootBoxStatsResponse> getLootBoxStats() {
+        return ResponseEntity.ok(lootBoxService.getLootBoxStats());
+    }
+
     @PostMapping("/lootbox/gift-all")
     public ResponseEntity<Map<String, Integer>> giftLootBoxToAll() {
         int count = lootBoxService.giftToAll();
         return ResponseEntity.ok(Map.of("gifted", count));
+    }
+
+    @GetMapping("/users/{id}/balance-stats")
+    public ResponseEntity<UserBalanceStatsResponse> getUserBalanceStats(@PathVariable Long id) {
+        return ResponseEntity.ok(lootBoxService.getUserBalanceStats(id));
     }
 
     @GetMapping("/media/export")

@@ -23,4 +23,16 @@ public interface LootBoxRepository extends JpaRepository<LootBox, Long> {
 
     @Query("SELECT lb FROM LootBox lb WHERE lb.source IS NULL")
     List<LootBox> findAllWithNullSource();
+
+    @Query("SELECT COUNT(lb) FROM LootBox lb WHERE lb.prizeAmount IS NOT NULL")
+    long countOpened();
+
+    @Query("SELECT COUNT(lb) FROM LootBox lb WHERE lb.prizeAmount IS NULL")
+    long countUnopened();
+
+    @Query("SELECT COALESCE(SUM(lb.prizeAmount), 0) FROM LootBox lb WHERE lb.prizeAmount IS NOT NULL")
+    long sumPrizeAmount();
+
+    @Query("SELECT lb.prizeAmount, COUNT(lb) FROM LootBox lb WHERE lb.prizeAmount IS NOT NULL GROUP BY lb.prizeAmount")
+    List<Object[]> countGroupedByPrizeAmount();
 }
