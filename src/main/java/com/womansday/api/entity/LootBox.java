@@ -20,6 +20,11 @@ public class LootBox {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // Legacy column — kept to satisfy NOT NULL DB constraint; always 0 for new boxes
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer cost = 0;
+
     @Column(name = "prize_amount")
     private Integer prizeAmount;
 
