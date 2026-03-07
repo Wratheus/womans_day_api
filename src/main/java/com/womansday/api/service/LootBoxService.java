@@ -32,13 +32,13 @@ public class LootBoxService {
 
     private static final int LOOTBOX_MILESTONE = 150;
 
-    // {amount, weight} — weights sum to 100, EV ≈ 23.5
+    // {amount, weight} — weights sum to 100, EV ≈ 27.5
     private static final int[][] PRIZE_TIERS = {
-            {5,   50},
-            {10,  25},
-            {30,  15},
-            {80,   7},
-            {280,  3},
+            {5,   40},
+            {10,  28},
+            {30,  19},
+            {80,   9},
+            {280,  4},
     };
 
     private static final int TOTAL_WEIGHT;
