@@ -16,4 +16,6 @@ public class LeaderboardEntry {
     private Boolean hasAvatar;
     private Long earned;
     private Boolean hidden;
+    private Integer openedLootBoxes;
+    private Integer unopenedLootBoxes;
 }

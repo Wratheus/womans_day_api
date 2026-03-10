@@ -37,7 +37,9 @@ public class TaskService {
     private final UserRepository userRepository;
     private final MediaStorageService mediaStorageService;
     private final BalanceTransactionRepository balanceTransactionRepository;
+    private final LootBoxRepository lootBoxRepository;
     private final LootBoxService lootBoxService;
+    private final GameStateService gameStateService;
 
     @Transactional(readOnly = true)
     public List<TaskResponse> getAllTasks(Long userId) {
@@ -56,6 +58,7 @@ public class TaskService {
     @Transactional(isolation = Isolation.DEFAULT)
     public SubmissionResponse submitTask(Long taskId, Long submitterId, String text,
             List<MultipartFile> files, List<Long> participantIds) {
+        gameStateService.requireGameActive();
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Задание не найдено"));
 
@@ -168,6 +171,7 @@ public class TaskService {
 
     @Transactional
     public void acceptInvitation(Long submissionId, Long userId) {
+        gameStateService.requireGameActive();
         TaskSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Выполнение не найдено"));
 
@@ -498,6 +502,8 @@ public class TaskService {
                     .hasAvatar(user.getAvatarPath() != null)
                     .earned(earned)
                     .hidden(Boolean.TRUE.equals(user.getHidden()))
+                    .openedLootBoxes(lootBoxRepository.countOpenedByUserId(user.getId()))
+                    .unopenedLootBoxes(lootBoxRepository.countUnopenedByUserId(user.getId()))
                     .build());
         }
 

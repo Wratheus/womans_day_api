@@ -1,7 +1,7 @@
 {
 	"info": {
 		"name": "WomansDay API",
-		"description": "Corporate March 8th event API.\n\n## Auth\nRegister or Login to get tokens. Tokens are auto-saved to collection variables.\n\n## Response Models\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"role\": \"user\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"balance\": 1500,\n  \"hasAvatar\": true,\n  \"unopenedBoxes\": 2\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"hidden\": false\n}\n```\n_Note: `hidden` is only present for admin callers._\n\n### TaskResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"MEDIA\",\n  \"collaborative\": true,\n  \"myStatus\": \"pending\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Maria\",\n  \"submitterLastName\": \"Ivanova\",\n  \"submitterDepartment\": \"Accounting\",\n  \"participants\": [UserResponse],\n  \"pendingParticipants\": [UserResponse],\n  \"status\": \"pending\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": 1741428600000,\n  \"fileIds\": [1, 2]\n}\n```\n\n### LootBoxResponse\n```json\n{\n  \"id\": 1,\n  \"prizeAmount\": 50,\n  \"openedAtEpoch\": 1741428600000,\n  \"createdAtEpoch\": 1741400000000\n}\n```\n_Note: `prizeAmount` is null for unopened boxes._\n\n### TaskStatsResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 50,\n  \"type\": \"MEDIA\",\n  \"collaborative\": false,\n  \"completedSubmissionsCount\": 4,\n  \"completedUsersCount\": 5,\n  \"completedSubmissions\": [\n    {\n      \"submissionId\": 12,\n      \"earnedReward\": 50,\n      \"createdAtEpoch\": 1741200000000,\n      \"participants\": [UserResponse]\n    }\n  ]\n}\n```\n\n### LeaderboardEntry\n```json\n{\n  \"userId\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"earned\": 1500,\n  \"rank\": 1,\n  \"hidden\": false\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 50000,\n  \"approvedBudget\": 3200\n}\n```\n\n\n\n### LootBoxStatsResponse\n```json\n{\n  \"totalOpened\": 42,\n  \"totalUnopened\": 15,\n  \"totalPrizeSum\": 890,\n  \"tiers\": [\n    {\n      \"prizeAmount\": 5,\n      \"configuredWeight\": 50,\n      \"configuredChance\": 50.0,\n      \"actualCount\": 22,\n      \"actualChance\": 52.38\n    }\n  ]\n}\n```\n\n### UserBalanceStatsResponse\n```json\n{\n  \"userId\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"currentBalance\": 350,\n  \"totalByType\": {\n    \"taskReward\": 500,\n    \"bonus\": 50,\n    \"lootboxPrize\": 100\n  },\n  \"history\": [BalanceHistoryEntry]\n}\n```\n\n### Error Response\n```json\n{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Login is already taken\"\n}\n```\n\n## Statuses\n- `notStarted` — user has not submitted\n- `waitingForParticipants` — waiting for invited participants\n- `invited` — user has a pending invitation\n- `pending` — awaiting admin review\n- `approved` — approved by admin\n- `rejected` — rejected by admin\n- `cancelled` — all participants declined\n\n## LootBox Rules\n- 1 box given automatically on first completed task\n- 1 box given for every 150 tulips earned from tasks\n- Prize tiers (EV ≈ 23.5): 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%)",
+		"description": "Corporate March 8th event API.\n\n## Auth\nRegister or Login to get tokens. Tokens are auto-saved to collection variables.\n\n## Response Models\n\n### AuthResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"role\": \"user\",\n  \"accessToken\": \"eyJhb...\",\n  \"refreshToken\": \"eyJhb...\",\n  \"expiresIn\": 3600\n}\n```\n\n### MeResponse\n```json\n{\n  \"id\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"balance\": 1500,\n  \"hasAvatar\": true,\n  \"unopenedBoxes\": 2\n}\n```\n\n### UserResponse\n```json\n{\n  \"id\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"hidden\": false\n}\n```\n_Note: `hidden` is only present for admin callers._\n\n### TaskResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 500,\n  \"type\": \"MEDIA\",\n  \"collaborative\": true,\n  \"myStatus\": \"pending\",\n  \"mySubmission\": { ...SubmissionResponse }\n}\n```\n\n### SubmissionResponse\n```json\n{\n  \"id\": 1,\n  \"submitterId\": 2,\n  \"submitterLogin\": \"masha\",\n  \"submitterFirstName\": \"Maria\",\n  \"submitterLastName\": \"Ivanova\",\n  \"submitterDepartment\": \"Accounting\",\n  \"participants\": [UserResponse],\n  \"pendingParticipants\": [UserResponse],\n  \"status\": \"pending\",\n  \"text\": \"...\",\n  \"createdAtEpoch\": 1741428600000,\n  \"fileIds\": [1, 2]\n}\n```\n\n### LootBoxResponse\n```json\n{\n  \"id\": 1,\n  \"prizeAmount\": 50,\n  \"openedAtEpoch\": 1741428600000,\n  \"createdAtEpoch\": 1741400000000\n}\n```\n_Note: `prizeAmount` is null for unopened boxes._\n\n### TaskStatsResponse\n```json\n{\n  \"id\": 1,\n  \"title\": \"Selfie\",\n  \"description\": \"...\",\n  \"reward\": 50,\n  \"type\": \"MEDIA\",\n  \"collaborative\": false,\n  \"completedSubmissionsCount\": 4,\n  \"completedUsersCount\": 5,\n  \"completedSubmissions\": [\n    {\n      \"submissionId\": 12,\n      \"earnedReward\": 50,\n      \"createdAtEpoch\": 1741200000000,\n      \"participants\": [UserResponse]\n    }\n  ]\n}\n```\n\n### LeaderboardEntry\n```json\n{\n  \"userId\": 1,\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"department\": \"Accounting\",\n  \"hasAvatar\": true,\n  \"earned\": 1500,\n  \"rank\": 1,\n  \"hidden\": false,\n  \"openedLootBoxes\": 3,\n  \"unopenedLootBoxes\": 1\n}\n```\n\n### BudgetResponse\n```json\n{\n  \"totalBudget\": 50000,\n  \"approvedBudget\": 3200\n}\n```\n\n\n\n### LootBoxStatsResponse\n```json\n{\n  \"totalOpened\": 42,\n  \"totalUnopened\": 15,\n  \"totalPrizeSum\": 890,\n  \"tiers\": [\n    {\n      \"prizeAmount\": 5,\n      \"configuredWeight\": 50,\n      \"configuredChance\": 50.0,\n      \"actualCount\": 22,\n      \"actualChance\": 52.38\n    }\n  ]\n}\n```\n\n### UserBalanceStatsResponse\n```json\n{\n  \"userId\": 1,\n  \"login\": \"masha\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ivanova\",\n  \"currentBalance\": 350,\n  \"totalByType\": {\n    \"taskReward\": 500,\n    \"bonus\": 50,\n    \"lootboxPrize\": 100\n  },\n  \"history\": [BalanceHistoryEntry]\n}\n```\n\n### Error Response\n```json\n{\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Login is already taken\"\n}\n```\n\n## Statuses\n- `notStarted` — user has not submitted\n- `waitingForParticipants` — waiting for invited participants\n- `invited` — user has a pending invitation\n- `pending` — awaiting admin review\n- `approved` — approved by admin\n- `rejected` — rejected by admin\n- `cancelled` — all participants declined\n\n## LootBox Rules\n- 1 box given automatically on first completed task\n- 1 box given for every 150 tulips earned from tasks\n- Prize tiers (EV ≈ 23.5): 5 (50%), 10 (25%), 30 (15%), 80 (7%), 280 (3%)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
@@ -1153,7 +1153,50 @@
 										"export"
 									]
 								},
-								"description": "Download all submission files as a ZIP archive."
+								"description": "Download all approved submission files as a ZIP archive. Includes media files and text answers as .txt files."
+							}
+						}
+					]
+				},
+				{
+					"name": "Game Control",
+					"item": [
+						{
+							"name": "Finish Game",
+							"request": {
+								"method": "POST",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/game/finish",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"game",
+										"finish"
+									]
+								},
+								"description": "Finish the game. Blocks user actions: submitting tasks, opening lootboxes, accepting invitations. Returns {\"gameFinished\": true}."
+							}
+						},
+						{
+							"name": "Resume Game",
+							"request": {
+								"method": "POST",
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/game/resume",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"game",
+										"resume"
+									]
+								},
+								"description": "Resume the game. Unblocks all user actions. Returns {\"gameFinished\": false}."
 							}
 						}
 					]
@@ -1181,7 +1224,7 @@
 						"auth": {
 							"type": "noauth"
 						},
-						"description": "Health check. Returns JSON with API name and status."
+						"description": "Health check. Returns JSON with API name, status, and gameFinished flag."
 					}
 				},
 				{

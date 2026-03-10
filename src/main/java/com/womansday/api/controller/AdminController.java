@@ -14,6 +14,7 @@ import com.womansday.api.dto.response.UserBalanceStatsResponse;
 import com.womansday.api.dto.response.UserResponse;
 import com.womansday.api.enums.Role;
 import com.womansday.api.service.AuthService;
+import com.womansday.api.service.GameStateService;
 import com.womansday.api.service.LootBoxService;
 import com.womansday.api.service.MediaStorageService;
 import com.womansday.api.service.TaskService;
@@ -35,6 +36,7 @@ import java.util.Map;
 public class AdminController {
 
     private final AuthService authService;
+    private final GameStateService gameStateService;
     private final LootBoxService lootBoxService;
     private final MediaStorageService mediaStorageService;
     private final TaskService taskService;
@@ -141,5 +143,17 @@ public class AdminController {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=\"media.zip\"");
         mediaStorageService.streamAllAsZip(response.getOutputStream());
+    }
+
+    @PostMapping("/game/finish")
+    public ResponseEntity<Map<String, Object>> finishGame() {
+        gameStateService.finishGame();
+        return ResponseEntity.ok(Map.of("gameFinished", true));
+    }
+
+    @PostMapping("/game/resume")
+    public ResponseEntity<Map<String, Object>> resumeGame() {
+        gameStateService.resumeGame();
+        return ResponseEntity.ok(Map.of("gameFinished", false));
     }
 }

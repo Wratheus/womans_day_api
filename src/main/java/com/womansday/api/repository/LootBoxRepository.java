@@ -15,6 +15,9 @@ public interface LootBoxRepository extends JpaRepository<LootBox, Long> {
     @Query("SELECT COUNT(lb) FROM LootBox lb WHERE lb.user.id = :userId AND lb.prizeAmount IS NULL")
     int countUnopenedByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COUNT(lb) FROM LootBox lb WHERE lb.user.id = :userId AND lb.prizeAmount IS NOT NULL")
+    int countOpenedByUserId(@Param("userId") Long userId);
+
     long countByUserId(Long userId);
 
     long countByUserIdAndSource(Long userId, LootBoxSource source);
@@ -35,4 +38,11 @@ public interface LootBoxRepository extends JpaRepository<LootBox, Long> {
 
     @Query("SELECT lb.prizeAmount, COUNT(lb) FROM LootBox lb WHERE lb.prizeAmount IS NOT NULL GROUP BY lb.prizeAmount")
     List<Object[]> countGroupedByPrizeAmount();
+
+    @Query("SELECT lb.user.id, COUNT(lb), " +
+            "SUM(CASE WHEN lb.prizeAmount IS NOT NULL THEN 1 ELSE 0 END), " +
+            "SUM(CASE WHEN lb.prizeAmount IS NULL THEN 1 ELSE 0 END), " +
+            "COALESCE(SUM(lb.prizeAmount), 0) " +
+            "FROM LootBox lb GROUP BY lb.user.id ORDER BY COALESCE(SUM(lb.prizeAmount), 0) DESC")
+    List<Object[]> statsGroupedByUser();
 }

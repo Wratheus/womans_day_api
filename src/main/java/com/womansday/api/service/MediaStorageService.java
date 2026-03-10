@@ -5,6 +5,7 @@ import com.womansday.api.entity.Task;
 import com.womansday.api.entity.TaskSubmission;
 import com.womansday.api.entity.User;
 import com.womansday.api.repository.SubmissionMediaRepository;
+import com.womansday.api.repository.TaskSubmissionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
@@ -62,14 +64,17 @@ public class MediaStorageService {
             .withZone(ZoneId.of("Europe/Moscow"));
 
     private final SubmissionMediaRepository mediaRepository;
+    private final TaskSubmissionRepository submissionRepository;
 
     private Path storageRoot;
 
     @Value("${app.media.storage-dir}")
     private String storageDir;
 
-    public MediaStorageService(SubmissionMediaRepository mediaRepository) {
+    public MediaStorageService(SubmissionMediaRepository mediaRepository,
+                               TaskSubmissionRepository submissionRepository) {
         this.mediaRepository = mediaRepository;
+        this.submissionRepository = submissionRepository;
     }
 
     @PostConstruct
@@ -147,7 +152,34 @@ public class MediaStorageService {
                 zos.flush();
             }
 
-            // 2) Орфаны — файлы на диске без записи в БД
+            // 2) Текстовые ответы — .txt файлы для submissions с текстом
+            for (TaskSubmission submission : submissionRepository.findAllApprovedWithParticipants()) {
+                String text = submission.getText();
+                if (text == null || text.isBlank()) continue;
+
+                Task task = submission.getTask();
+                User submitter = submission.getSubmitter();
+
+                String date = DATE_FMT.format(Instant.ofEpochMilli(submission.getCreatedAtEpoch()));
+                String folder = sanitize(task.getTitle());
+                String fileName = sanitize(submitter.getLastName() + "_" + submitter.getFirstName())
+                        + "_" + date;
+
+                String entryName = folder + "/" + fileName + ".txt";
+                int counter = 1;
+                while (usedNames.contains(entryName)) {
+                    entryName = folder + "/" + fileName + "_" + counter + ".txt";
+                    counter++;
+                }
+                usedNames.add(entryName);
+
+                zos.putNextEntry(new ZipEntry(entryName));
+                zos.write(text.getBytes(StandardCharsets.UTF_8));
+                zos.closeEntry();
+                zos.flush();
+            }
+
+            // 3) Орфаны — файлы на диске без записи в БД
             Path submissionsDir = storageRoot.resolve("submissions");
             if (Files.exists(submissionsDir)) {
                 Files.walkFileTree(submissionsDir, new SimpleFileVisitor<>() {

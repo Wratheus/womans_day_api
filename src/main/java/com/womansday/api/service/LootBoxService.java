@@ -54,6 +54,7 @@ public class LootBoxService {
     private final LootBoxRepository lootBoxRepository;
     private final BalanceTransactionRepository balanceTransactionRepository;
     private final UserRepository userRepository;
+    private final GameStateService gameStateService;
 
     @Transactional
     public int migrateNullSourceLootBoxes() {
@@ -164,6 +165,7 @@ public class LootBoxService {
 
     @Transactional
     public LootBoxResponse open(Long lootBoxId, Long userId) {
+        gameStateService.requireGameActive();
         LootBox lootBox = lootBoxRepository.findById(lootBoxId)
                 .orElseThrow(() -> new ResourceNotFoundException("Лутбокс не найден"));
 
